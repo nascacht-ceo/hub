@@ -1,0 +1,39 @@
+﻿services:
+  spark-master:
+    image: bde2020/spark-master:latest
+    container_name: spark-master
+    ports:
+      - "7077:7077"   # Spark master port
+      - "8080:8080"   # Web UI port
+    environment:
+      - INIT_DAEMON_STEP=setup
+    networks:
+      - spark-network
+
+  spark-worker:
+    image: bde2020/spark-worker:latest
+    container_name: spark-worker
+    ports:
+      - "8081:8081"  # Web UI port for worker
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+  dotnet-app:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: dotnet-app
+    volumes:
+      - .:/app
+    working_dir: /app
+    entrypoint: ["dotnet", "test"]
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+networks:
+  spark-network:
+    driver: bridge
