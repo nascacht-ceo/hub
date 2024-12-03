@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/hub/CopilotIndices/17.12.31.40377
+/.vs
+/src/nc-hub/.vs
+/src/nc-hub/obj
