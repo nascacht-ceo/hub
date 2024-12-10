@@ -5,8 +5,10 @@
     ports:
       - "7077:7077"   # Spark master port
       - "8080:8080"   # Web UI port
+      - "5567:5567"
     environment:
       - INIT_DAEMON_STEP=setup
+      - SPARK_JAVA_GATEWAY_PORT=5567
     networks:
       - spark-network
 
@@ -15,20 +17,20 @@
     container_name: spark-worker
     ports:
       - "8081:8081"  # Web UI port for worker
+      - "5568:5568"
     environment:
       - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_JAVA_GATEWAY_PORT=5568
     depends_on:
       - spark-master
     networks:
       - spark-network
 
   dotnet-app:
-    image: mcr.microsoft.com/dotnet/sdk:9.0
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: dotnet-app
-    volumes:
-      - .:/app
-    working_dir: /app
-    entrypoint: ["dotnet", "test"]
     depends_on:
       - spark-master
     networks:

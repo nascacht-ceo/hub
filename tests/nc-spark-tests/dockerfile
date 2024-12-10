@@ -1,0 +1,18 @@
+﻿# Base image with .NET SDK
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+# Install dependencies to allow for Java installation
+RUN apt-get update && apt-get install -y default-jdk
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code to the container
+COPY . .
+
+# Restore and build the application
+RUN dotnet restore
+RUN dotnet build
+
+# Entry point to run the tests or application
+ENTRYPOINT ["dotnet", "test"]

@@ -19,6 +19,10 @@ namespace nc_spark_tests
                 .Builder()
                 .AppName("xUnit Spark Integration Test")
                 .Master(sparkMasterUri) // Connect to the Spark master in Docker.
+                .Config("spark.driver.bindAddress", "0.0.0.0")  // Ensure the driver binds to an address accessible from other containers
+                .Config("spark.driver.host", "dotnet-app")      // Host name used by the driver container
+                .Config("spark.driver.port", "5567")
+                .Config("spark.blockManager.port", "5568")
                 .GetOrCreate();
 
 
