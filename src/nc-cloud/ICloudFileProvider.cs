@@ -5,31 +5,29 @@
 public interface ICloudFileProvider
 {
     /// <summary>
+    /// Name of the remote directory.
+    /// </summary>
+    string Name { get; }
+
+    /// <summary>
     /// The <see cref="ICloudFileInfo"/> about a file at <paramref name="filePath"/>.
     /// </summary>
-    Task<ICloudFileInfo> GetFileInfoAsync(string filePath);
+    Task<ICloudFileInfo> GetFileInfoAsync(string filePath, CancellationToken token = default);
 
     /// <summary>
     /// Get the contents of a repository.
     /// </summary>
-    Task<IAsyncEnumerable<ICloudFileInfo>> GetDirectoryContentsAsync(string directoryPath);
+    IAsyncEnumerable<ICloudFileInfo> GetDirectoryContentsAsync(string directoryPath, CancellationToken token = default);
 
     /// <summary>
     /// Determine if a file existsin a provider at <paramref name="filePath"/>.
     /// </summary>
-    Task<bool> FileExistsAsync(string filePath);
+    Task<bool> FileExistsAsync(string filePath, CancellationToken token = default);
 
     /// <summary>
-    /// Create a new drive in the cloud.
+    /// Deletes files or folders.
     /// </summary>
-    /// <param name="name">Name of provider to create.</param>
-    /// <param name="metadata">Metadata about the provider.</param>
-    /// <returns><see cref="ICloudFileProvider"/> pointed to the newly created provider.</returns>
-    Task<ICloudFileProvider> CreateAsync(string name, IDictionary<string, string>? metadata = null);
-
-    /// <summary>
-    /// Lists all available providers.
-    /// </summary>
-    /// <returns>An asynchronous stream of ICloudFileProvider instances scoped to each container or bucket.</returns>
-    Task<IAsyncEnumerable<ICloudFileProvider>> ListAsync(string? name = null);
+    /// <param name="paths">An enumeration of files or folder to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task DeleteAsync(IEnumerable<string> paths, CancellationToken token = default);
 }

@@ -1,0 +1,37 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+public class ExtensionTests
+{
+    public class AddAzure : ExtensionTests
+    {
+        [Fact]
+        public void AddsAzureServiceOptions()
+        {
+            var services = new ServiceCollection().AddAzure(new AzureServiceOptions()).BuildServiceProvider();
+            var options = services.GetRequiredService<IOptions<AzureServiceOptions>>();
+            Assert.NotNull(options);
+        }
+
+        [Fact]
+        public void AddsAzureServiceOptionsFromConfig()
+        {
+            var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
+            var services = new ServiceCollection().AddAzure(config.GetSection("Azure")).BuildServiceProvider();
+            var options = services.GetRequiredService<IOptions<AzureServiceOptions>>();
+            Assert.NotNull(options);
+        }
+
+        [Fact]
+        public void AddsConfigureManagerOptions()
+        {
+            var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
+            var services = new ServiceCollection().AddAzure(config.GetSection("Azure")).BuildServiceProvider();
+            var options = services.GetRequiredService<IOptions<CloudFileManagerOptions>>();
+            Assert.NotNull(options);
+            Assert.NotEmpty(options.Value.ServiceFactories);
+            Assert.Equal(2, options.Value.ServiceFactories.Count);
+        }
+    }
+}
