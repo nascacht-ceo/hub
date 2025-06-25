@@ -9,7 +9,7 @@ public class AzureTestFixture: ITestFixture
     public ICloudFileManager Manager { get; private set; }
     public AzureTestFixture()
     {
-        var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
+        var config = new ConfigurationBuilder().AddJsonFile("artifacts/azure.json").Build();
         var services = new ServiceCollection().AddAzure(config.GetSection("Azure")).BuildServiceProvider();
         Manager = services.GetRequiredService<ICloudFileManager>();
     }

@@ -30,12 +30,12 @@ public class BlobSource : ISource<ICloudFile>
     }
 
 
-    public Task DeleteAsync(string repositoryName, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IRepositoryOptions<ICloudFile> options, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public IAsyncEnumerable<IRepository<ICloudFile>> SearchAsync(string repositoryName, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IRepository<ICloudFile>> SearchAsync(IRepositoryOptions<ICloudFile> options, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

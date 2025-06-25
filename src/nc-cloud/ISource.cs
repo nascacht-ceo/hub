@@ -13,7 +13,7 @@ public interface ISource<T> where T : class
     /// <param name="repositoryName">Name of respository to search for; wildcard matching with * and ? are supported.</param>
     /// <param name="cancellationToken">CancellationToken. Defaults to <see cref="default"/></param>
     /// <returns>Instances of <see cref="IRepository{T}"/> matching <paramref name="repositoryName"/>.</returns>
-    public IAsyncEnumerable<IRepository<T>> SearchAsync(string repositoryName, CancellationToken cancellationToken = default);
+    public IAsyncEnumerable<IRepository<T>> SearchAsync(IRepositoryOptions<T> options, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates an <see cref="IRepository{T}"/>
@@ -28,5 +28,5 @@ public interface ISource<T> where T : class
     /// </summary>
     /// <param name="repositoryName">Name of repository to delete.</param>
     /// <param name="cancellationToken">CancellationToken. Defaults to <see cref="default"/></param>
-    public Task DeleteAsync(string repositoryName, CancellationToken cancellationToken = default);
+    public Task DeleteAsync(IRepositoryOptions<T> options, CancellationToken cancellationToken = default);
 }
