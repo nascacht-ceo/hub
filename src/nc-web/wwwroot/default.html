@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure SVG Markup (Themable Progressive Color Transition with Responsive Circle Display and Variable Stroke Width)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        li {
+            list-style: none; /* Remove bullet points */
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between text and SVG */
+        }
+
+        /* Default theme variables applied to all SVG elements */
+        svg {
+            --logo-hue: 120; /* Default Green hue */
+            --logo-base: 30%;
+            --logo-increment: 5%; /* Default increment for larger sizes */
+            --circle-display: block; /* Default: circles are visible */
+            --logo-stroke-width: 2; /* Default stroke width */
+            display: block; /* Remove extra space below SVG */
+            /* Removed default width/height from here */
+            container-type: inline-size; /* Make the SVG itself a container for queries */
+            container-name: logo-svg; /* Give it a name for specific targeting */
+        }
+
+        /* Class for default 100x100 size */
+        .logo-default-size {
+            width: 100px;
+            height: 100px;
+        }
+
+        /* Override for specific themes */
+        .logo-red {
+            --logo-hue: 0; /* Red hue */
+            --logo-base: 20%; /* Example: different base for red */
+            --logo-increment: 10%; /* Example: different increment for red */
+            --logo-stroke-width: 3; /* Example: thicker stroke for red theme */
+        }
+        .logo-blue {
+            --logo-hue: 240; /* Blue hue */
+            /* Inherits --logo-base and --logo-increment from default svg rule unless specified */
+        }
+        .logo-purple {
+            --logo-hue: 270; /* Purple hue */
+            /* Inherits --logo-base and --logo-increment from default svg rule unless specified */
+        }
+
+        /* Container Query: For SVG elements (which are now containers) with max-width 63px */
+        @container logo-svg (max-width: 63px) {
+            svg { /* Target the SVG itself within its own container context */
+                --logo-increment: 0%; /* No lightness increment for small sizes */
+                --circle-display: none; /* Hide circles for small sizes */
+                --logo-stroke-width: 1; /* Thinner stroke for small sizes */
+            }
+        }
+
+        /* CSS to drive the color on the SVG tag */
+        /* Each arm uses the --logo-hue variable for its color */
+        .arm-1 { color: hsl(var(--logo-hue), 100%, var(--logo-base)); }
+        .arm-2 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment))); }
+        .arm-3 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment) * 2)); }
+        .arm-4 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment) * 3)); }
+        .arm-5 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment) * 4)); }
+        .arm-6 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment) * 3)); } /* Decreasing */
+        .arm-7 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment) * 2)); } /* Decreasing */
+        .arm-8 { color: hsl(var(--logo-hue), 100%, calc(var(--logo-base) + var(--logo-increment))); } /* Decreasing */
+        .arm-9 { color: hsl(var(--logo-hue), 100%, var(--logo-base)); } /* Decreasing */
+    </style>
+</head>
+<body>
+    <div>
+        <h1>SVG Logos</h1>
+
+        <ul>
+            <li>Basic (Default Green): <svg class="logo-default-size"><use href="icons.svg#logo" /></svg></li>
+            <li>16x16 (No transition, Thin Stroke): <svg class="logo-red" height="16" width="16"><use href="icons.svg#logo-icon" /></svg></li>
+            <li>24x24 (No transition, Thin Stroke): <svg height="24" width="24"><use href="icons.svg#logo-icon" /></svg></li>
+            <li>32x32 (No transition, Thin Stroke): <svg height="32" width="32"><use href="icons.svg#logo-icon" /></svg></li>
+            <li>64x64 (Transition, Default Stroke): <svg height="64" width="64"><use href="icons.svg#logo" /></svg></li>
+            <li>128x128 (Transition, Red Theme, Thicker Stroke): <svg height="128" width="128" class="logo-red"><use href="icons.svg#logo" /></svg></li>
+        </ul>
+
+    </div>
+</body>
+</html>

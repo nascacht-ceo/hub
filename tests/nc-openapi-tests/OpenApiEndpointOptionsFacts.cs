@@ -27,4 +27,10 @@ public partial class OpenApiEndpointOptionsFacts
         Assert.False(isValid);
         Assert.Single(results);
     }
+
+    [Fact]
+    public void LoadsFromConfiguration()
+    {
+
+    }
 }

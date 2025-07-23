@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,13 +16,25 @@ namespace nc.OpenApi;
 /// </summary>
 public class OpenApiServiceOptions : IValidatableObject
 {
+    public const string ConfigurtaionPath = "nc:openapi";
+    
+
+    private IDictionary<string, OpenApiSpecification> _specifications 
+        = new Dictionary<string, OpenApiSpecification>(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Gets or sets the collection of OpenAPI specifications.
     /// </summary>
-    public IDictionary<string, OpenApiSpecification> Specifications { get; set; } = new Dictionary<string, OpenApiSpecification>(StringComparer.OrdinalIgnoreCase)
+    public IDictionary<string, OpenApiSpecification> Specifications 
     {
-        { "Petstore", new OpenApiSpecification("https://petstore3.swagger.io/api/v3/openapi.json") }
-    };
+        get
+        {
+            if (_specifications.Count == 0)
+                _specifications.Add("Petstore", new OpenApiSpecification("https://petstore3.swagger.io/api/v3/openapi.json"));
+            return _specifications;
+        }
+        set {  _specifications = value; } 
+    } 
 
     public string HttpClientName { get; set; } = "OpenApiServiceClient";
 
@@ -174,4 +189,15 @@ public class OpenApiSpecification : IValidatableObject
 
         return results;
     }
+
+    public static implicit operator OpenApiSpecification(string url)
+    {
+        return new OpenApiSpecification(url);
+    }
+
+    public static implicit operator OpenApiSpecification(Uri uri)
+    {
+        return new OpenApiSpecification(uri.AbsoluteUri);
+    }
+
 }

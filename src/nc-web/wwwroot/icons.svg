@@ -1,0 +1,64 @@
+﻿<svg style="display:none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+	<defs>
+		<!-- Group 1: Circles with r=3,4,5,4,3 -->
+		<g id="arm1">
+			<path d="M0,50 A60,70 0 0,1 100,50" fill="transparent" stroke="currentColor" stroke-width="var(--logo-stroke-width)"/>
+			<circle cx="0.02" cy="49.98" r="3" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="22.04" cy="25.69" r="4" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="51.20" cy="18.76" r="5" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="79.76" cy="28.00" r="4" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="101.18" cy="52.15" r="3" fill="currentColor" style="display: var(--circle-display);" />
+		</g>
+		<!-- Group 2: Circles with r=5,4,3,4,5 -->
+		<g id="arm2">
+			<path d="M0,50 A60,70 0 0,1 100,50" fill="transparent" stroke="currentColor" stroke-width="var(--logo-stroke-width)"/>
+			<circle cx="0.02" cy="49.98" r="5" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="22.04" cy="25.69" r="4" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="51.20" cy="18.76" r="3" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="79.76" cy="28.00" r="4" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="101.18" cy="52.15" r="5" fill="currentColor" style="display: var(--circle-display);" />
+		</g>
+		<!-- Group 3: Circles with r=3,5,4,5,3 -->
+		<g id="arm3">
+			<path d="M0,50 A60,70 0 0,1 100,50" fill="transparent" stroke="currentColor" stroke-width="var(--logo-stroke-width)"/>
+			<circle cx="0.02" cy="49.98" r="3" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="22.04" cy="25.69" r="5" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="51.20" cy="18.76" r="4" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="79.76" cy="28.00" r="5" fill="currentColor" style="display: var(--circle-display);" />
+			<circle cx="101.18" cy="52.15" r="3" fill="currentColor" style="display: var(--circle-display);" />
+		</g>
+		<g id="arc1">
+			<path d="M0,50 A60,70 0 0,1 100,50" fill="transparent" stroke="currentColor" stroke-width="var(--logo-stroke-width)"/>
+		</g>
+		<!-- Group 2: Circles with r=5,4,3,4,5 -->
+		<g id="arc2">
+			<path d="M0,50 A60,70 0 0,1 100,50" fill="transparent" stroke="currentColor" stroke-width="var(--logo-stroke-width)"/>
+		</g>
+		<!-- Group 3: Circles with r=3,5,4,5,3 -->
+		<g id="arc3">
+			<path d="M0,50 A60,70 0 0,1 100,50" fill="transparent" stroke="currentColor" stroke-width="var(--logo-stroke-width)"/>
+		</g>
+	</defs>
+	<symbol id="logo" viewBox="0 0 200 200">
+		<use href="#arm1" x="0" y="0" transform="translate(100,20) rotate(40, 0,50)" class="arm-1"/>
+		<use href="#arm2" x="0" y="0" transform="translate(120,27) rotate(80, 0,50)" class="arm-2"/>
+		<use href="#arm3" x="0" y="0" transform="translate(130,44.792) rotate(120, 0,50)" class="arm-3"/>
+		<use href="#arm1" x="0" y="0" transform="translate(125.98, 65) rotate(160, 0,50)" class="arm-4"/>
+		<use href="#arm2" x="0" y="0" transform="translate(110.2606,78.1907) rotate(200, 0,50)" class="arm-5"/>
+		<use href="#arm3" x="0" y="0" transform="translate(89.74, 78.191) rotate(240, 0,50)" class="arm-6"/>
+		<use href="#arm1" x="0" y="0" transform="translate(74.02, 65) rotate(280, 0,50)" class="arm-7"/>
+		<use href="#arm2" x="0" y="0" transform="translate(70.456,44.792) rotate(320, 0,50)" class="arm-8"/>
+		<use href="#arm3" x="0" y="0" transform="translate(80.716, 27.02) rotate(0, 0,50)" class="arm-9"/>
+	</symbol>
+	<symbol id="logo-icon" viewBox="0 0 200 200">
+		<use href="#arc1" x="0" y="0" transform="translate(100,20) rotate(40, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(120,27) rotate(80, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(130,44.792) rotate(120, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(125.98, 65) rotate(160, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(110.2606,78.1907) rotate(200, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(89.74, 78.191) rotate(240, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(74.02, 65) rotate(280, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(70.456,44.792) rotate(320, 0,50)" class="arm-1"/>
+		<use href="#arc1" x="0" y="0" transform="translate(80.716, 27.02) rotate(0, 0,50)" class="arm-1"/>
+	</symbol>
+</svg>
