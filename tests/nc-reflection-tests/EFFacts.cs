@@ -1,19 +1,42 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.IdentityModel.Tokens;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace nc.Reflection.Tests;
 
-public class EFFacts
+public class EFFacts : IAsyncLifetime
 {
     private readonly TypeService _typeService;
+    private static string ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AdventureWorks;Trusted_Connection=True;";
 
     public EFFacts()
     {
         _typeService = new TypeService();
+    }
+
+    public async Task InitializeAsync()
+    {
+        var sqlReflection = new SqlReflection(ConnectionString);
+        await foreach (var classDefinition in sqlReflection.DiscoverClasses("AdventureWorks", "Person", "%"))
+        {
+            var type = _typeService.GetClass(classDefinition);
+            Assert.NotNull(type);
+        }
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
     }
 
     [Fact]
@@ -23,28 +46,30 @@ public class EFFacts
             .UseInMemoryDatabase("DynamicDbTest")
             .Options;
 
-        var dynamicType = _typeService.GetClass(new ClassDefinition<SampleClass>());
+        var sampleDefinition = new ClassDefinition<SampleClass>();
+        sampleDefinition.Properties.First(p => p.Name == "Id").IsKey = true;
+        var sampleType = _typeService.GetClass(sampleDefinition);
 
         // Act
-        using (var context = new DynamicDbContext(options, new[] { dynamicType }))
+        using (var context = new DynamicDbContext(options, _typeService, new[] { sampleDefinition }))
         {
             context.Database.EnsureCreated();
 
 
-            var entity = Activator.CreateInstance(dynamicType);
+            var entity = Activator.CreateInstance(sampleType);
             Assert.NotNull(entity);
-            dynamicType.GetProperty("Id")!.SetValue(entity, 27);
-            dynamicType.GetProperty("Name")!.SetValue(entity, "Queries Poco Types");
+            sampleType.GetProperty("Id")!.SetValue(entity, 27);
+            sampleType.GetProperty("Name")!.SetValue(entity, "Queries Poco Types");
             context.Add(entity);
             context.SaveChanges();
         }
 
         object? fetched;
-        using (var context = new DynamicDbContext(options, new[] { dynamicType }))
+        using (var context = new DynamicDbContext(options, _typeService, new[] { sampleDefinition }))
         {
             var set = (IQueryable)typeof(DbContext)
                 .GetMethod("Set", Type.EmptyTypes)!
-                .MakeGenericMethod(dynamicType)
+                .MakeGenericMethod(sampleType)
                 .Invoke(context, null)!;
 
             fetched = set.Cast<IIdentity<long>>().FirstOrDefault(e => e.Id == 27);
@@ -52,36 +77,119 @@ public class EFFacts
 
         // Assert
         Assert.NotNull(fetched);
-        Assert.Equal(27, (long)dynamicType.GetProperty("Id")!.GetValue(fetched)!);
-        Assert.Equal("Queries Poco Types", dynamicType.GetProperty("Name")!.GetValue(fetched));
+        Assert.Equal(27, (long)sampleType.GetProperty("Id")!.GetValue(fetched)!);
+        Assert.Equal("Queries Poco Types", sampleType.GetProperty("Name")!.GetValue(fetched));
     }
 
+    [Fact]
+    public async Task DiscoversTables()
+    {
+        Assert.NotEmpty(_typeService.GetTypes());
+    }
+
+    [Fact]
+    public async Task QueriesTables()
+    {
+        var options = new DbContextOptionsBuilder<DynamicDbContext>()
+            .UseSqlServer(ConnectionString, sql => sql.UseNetTopologySuite())
+            .Options;
+
+
+
+        var types = _typeService.GetTypes("AdventureWorks").ToList();
+        var addressType = types.First(t => t.Name == "Person_Address");
+        using var context = new DynamicDbContext(options, _typeService, _typeService.GetClassDefinitions("AdventureWorks"));
+
+        var set = (IQueryable)typeof(DbContext)
+            .GetMethod("Set", Type.EmptyTypes)!
+            .MakeGenericMethod(addressType)
+            .Invoke(context, null)!;
+        var items = set.Cast<object>().Take(100).ToList();
+        Assert.Equal(100, items.Count);
+    }
 
     public class DynamicDbContext : DbContext
     {
-        private readonly IEnumerable<Type> _dynamicTypes;
+        private readonly ITypeService _typeService;
+        private readonly IEnumerable<ClassDefinition> _classDefinitions;
 
-        public DynamicDbContext(DbContextOptions options, IEnumerable<Type> dynamicTypes)
+        public DynamicDbContext(DbContextOptions options, ITypeService typeService, IEnumerable<ClassDefinition> classDefinitions)
             : base(options)
         {
-            _dynamicTypes = dynamicTypes;
+            _typeService = typeService;
+            _classDefinitions = classDefinitions;
         }
+
+        public static IDictionary<Type, ValueConverter> ValueConverters { get; } = new Dictionary<Type, ValueConverter>
+        {
+            { typeof(XElement), new ValueConverter<XElement, string>(
+                v => v.ToString(),
+                v => XElement.Parse(v)) },
+            { typeof(XDocument), new ValueConverter<XDocument, string>(
+                v => v.ToString(),
+                v => XDocument.Parse(v)) }
+            //{ typeof(Point), new ValueConverter<Point, string>(
+            //    v => v.ToString(),
+            //    v => Point.Parse(v)) }
+        };
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            foreach (var type in _dynamicTypes)
+            foreach (var definition in _classDefinitions)
             {
-                var entity = modelBuilder.Entity(type);
-                var idProp = type.GetProperty("Id");
-                if (idProp != null)
+                var type = _typeService.GetClass(definition);
+                var entity = modelBuilder.Entity(type).ToTable(definition.ClassName.Value.Substring(7), "Person");
+                var keys = definition.Properties.Where(p => p.IsKey).Select(p => p.Name);
+                if (keys.IsNullOrEmpty())
+                    entity.HasNoKey();
+                else
+                    entity.HasKey(keys.ToArray());
+
+
+                foreach (var prop in type.GetProperties())
                 {
-                    entity.HasKey("Id");
+                    if (prop.PropertyType == typeof(object))
+                    {
+                        modelBuilder.Entity(type).Ignore(prop.Name);
+                    }
+                    if (ValueConverters.ContainsKey(prop.PropertyType))
+                        modelBuilder.Entity(type).Property(prop.Name).HasConversion(ValueConverters[prop.PropertyType]);
+
+                    //if (prop.PropertyType == typeof(string))
+                    //{
+                    //    entity.Property(prop.Name).HasMaxLength(255);
+                    //}
+                    //else if (prop.PropertyType == typeof(int) || prop.PropertyType == typeof(long))
+                    //{
+                    //    entity.Property(prop.Name).IsRequired();
+                    //}
+                    //else if (prop.PropertyType == typeof(DateTime))
+                    //{
+                    //    entity.Property(prop.Name).HasColumnType("datetime2");
+                    //}
+                    if (prop.PropertyType == typeof(Point))
+                    {
+                        // entity.Property<Point>(prop.Name).HasColumnType("geography");
+                        modelBuilder.Entity(type).Ignore(nameof(Point.UserData));
+                    }
+                }
+            }
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.ClrType.GetProperties())
+                {
+                    if (property.PropertyType == typeof(Point))
+                    {
+                        modelBuilder.Entity(entityType.ClrType)
+                            .Ignore(nameof(Point.UserData));
+                    }
                 }
             }
         }
     }
 
-    public class SampleClass: IIdentity<long>
+    public class SampleClass : IIdentity<long>
     {
         public long Id { get; set; }
         public string? Name { get; set; }

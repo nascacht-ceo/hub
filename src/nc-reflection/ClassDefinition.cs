@@ -43,6 +43,11 @@ public class ClassDefinition : IValidateOptions<ClassDefinition>
     }
 
     /// <summary>
+    /// Returns the full name of the class, combining the solution namespace and class name.
+    /// </summary>
+    public string FullName => $"{Solution}.{ClassName}";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ClassDefinition"/> class using the type of the specified POCO
     /// (Plain Old CLR Object).
     /// </summary>

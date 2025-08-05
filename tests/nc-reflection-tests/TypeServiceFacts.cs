@@ -42,6 +42,31 @@ public class TypeServiceFacts
             Assert.StartsWith("TestSolution", type.Assembly.FullName);
         }
 
+        [Fact]
+        public void SegregatesBySolution()
+        {
+            var typeService = new TypeService();
+            var classDefinition1 = new ClassDefinition
+            {
+                ClassName = "ClassA",
+                Solution = "SolutionA"
+            };
+            var classDefinition2 = new ClassDefinition
+            {
+                ClassName = "ClassA",
+                Solution = "SolutionB"
+            };
+            var type1 = typeService.GetClass(classDefinition1);
+            var type2 = typeService.GetClass(classDefinition2);
+            Assert.NotNull(type1);
+            Assert.NotNull(type2);
+            Assert.NotEqual(type1.Assembly, type2.Assembly);
+            Assert.Equal("SolutionA.ClassA", type1.FullName);
+            Assert.Equal("SolutionB.ClassA", type2.FullName);
+            Assert.Equal("ClassA", type1.Name);
+            Assert.Equal("ClassA", type2.Name);
+        }
+
 
         [Theory]
         [InlineData("AddsInterfaceLong", typeof(long))]

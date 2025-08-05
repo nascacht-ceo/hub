@@ -20,5 +20,42 @@ namespace nc.Reflection
         /// <param name="classDefinition">The definition of the class for which to retrieve the type.</param>
         /// <returns>The <see cref="Type"/> that corresponds to the provided class definition.</returns>
         public Type GetClass(ClassDefinition classDefinition);
+
+        /// <summary>
+        /// Retrieves a collection of solutions available in the current context.
+        /// </summary>
+        /// <remarks>This method does not guarantee the order of the solutions in the returned
+        /// collection.</remarks>
+        /// <returns>An <see cref="IEnumerable{T}"/> of strings, where each string represents a solution. The collection will be
+        /// empty if no solutions are available.</returns>
+        public IEnumerable<string> GetSolutions();
+
+        /// <summary>
+        /// Retrieves a collection of all types available in the current context.
+        /// </summary>
+        /// <remarks>This method provides access to all types that are discoverable in the current
+        /// context. The caller can enumerate the returned collection to inspect or process the types.</remarks>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Type"/> objects representing the types available. The
+        /// collection will be empty if no types are found.</returns>
+        public IEnumerable<Type> GetTypes();
+
+        /// <summary>
+        /// Retrieves a collection of types associated with the specified solution.
+        /// </summary>
+        /// <param name="solution">Name of solution containing the types.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Type"/> objects representing the types available. The
+        /// collection will be empty if no types are found.</returns>
+        public IEnumerable<Type> GetTypes(SafeString solution);
+
+
+        /// <summary>
+        /// Retrieves a collection of class definitions from the specified solution.
+        /// </summary>
+        /// <param name="solution">A <see cref="SafeString"/> representing the solution from which to extract class definitions.  This
+        /// parameter cannot be null or empty.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="ClassDefinition"/> objects representing the classes  defined
+        /// in the provided solution. Returns an empty collection if no class definitions are found.</returns>
+        public IEnumerable<ClassDefinition> GetClassDefinitions(SafeString solution);
+
     }
 }

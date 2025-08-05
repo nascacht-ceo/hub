@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 
 namespace nc.Reflection;
 
@@ -15,21 +11,24 @@ namespace nc.Reflection;
 /// <remarks>This service is designed to support scenarios where types need to be generated dynamically, such as
 /// for runtime data modeling or dynamic proxy generation. It uses reflection emit to define types and their properties,
 /// grouping them by solution namespaces.</remarks>
-public class TypeService
+public class TypeService: ITypeService
 {
     /// <summary>
     /// Track a solution and it's classes.
     /// </summary>
     private readonly ConcurrentDictionary<SafeString, ConcurrentDictionary<SafeString, ClassDefinition>> _solutions = new();
+    private readonly ConcurrentDictionary<SafeString, Type> _types = new();
 
     /// <summary>
     /// Track <see cref="ModuleBuilder"/> by solution.
     /// </summary>
     private readonly ConcurrentDictionary<SafeString, ModuleBuilder> _moduleBuilders = new();
+    private readonly IEnumerable<ITypeBuilderExtension> _extensions;
     private readonly ILogger<TypeService>? _logger;
 
-    public TypeService(ILogger<TypeService>? logger = null)
+    public TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, ILogger<TypeService>? logger = null)
     {
+        _extensions = extensions ?? new List<ITypeBuilderExtension>();
         _logger = logger;
     }
 
@@ -73,62 +72,75 @@ public class TypeService
         activity?.SetTag("ClassName", classDefinition.ClassName);
 
         var moduleBuilder = GetModuleBuilder(classDefinition.Solution);
-        var tb = moduleBuilder.DefineType(classDefinition.ClassName, TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
-        var propertyMap = new Dictionary<string, (FieldBuilder field, MethodBuilder getter, MethodBuilder setter)>();
 
-        foreach (var property in classDefinition.Properties.Where(p => p.DeclaringType == null))
+        var classBuilder = new ClassBuilder(moduleBuilder, classDefinition);
+        foreach (var extension in _extensions)
         {
-            var field = tb.DefineField($"_{property.Name}", property.ClrType, FieldAttributes.Private);
-
-            var propertyInfo = tb.DefineProperty(property.Name, PropertyAttributes.HasDefault, property.ClrType, null);
-
-            var getter = tb.DefineMethod($"get_{property.Name}",
-                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
-                property.ClrType, Type.EmptyTypes);
-            var getIL = getter.GetILGenerator();
-            getIL.Emit(OpCodes.Ldarg_0);
-            getIL.Emit(OpCodes.Ldfld, field);
-            getIL.Emit(OpCodes.Ret);
-
-            var setter = tb.DefineMethod($"set_{property.Name}",
-                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
-                null, new[] { property.ClrType });
-            var setIL = setter.GetILGenerator();
-            setIL.Emit(OpCodes.Ldarg_0);
-            setIL.Emit(OpCodes.Ldarg_1);
-            setIL.Emit(OpCodes.Stfld, field);
-            setIL.Emit(OpCodes.Ret);
-
-            propertyInfo.SetGetMethod(getter);
-            propertyInfo.SetSetMethod(setter);
-
-            propertyMap[property.Name] = (field, getter, setter);
-        }
-
-        foreach (var interfaceType in classDefinition.Interfaces)
-        {
-            tb.AddInterfaceImplementation(interfaceType);
-
-            foreach (var interfaceProp in interfaceType.GetProperties())
+            try
             {
-                if (!propertyMap.TryGetValue(interfaceProp.Name, out var memberInfo))
-                {
-                    throw new InvalidOperationException($"Property '{interfaceProp.Name}' required by interface '{interfaceType.FullName}' is not defined in ClassDefinition.");
-                }
-
-                if (interfaceProp.GetGetMethod() is MethodInfo interfaceGetter)
-                {
-                    tb.DefineMethodOverride(memberInfo.getter, interfaceGetter);
-                }
-
-                if (interfaceProp.GetSetMethod() is MethodInfo interfaceSetter)
-                {
-                    tb.DefineMethodOverride(memberInfo.setter, interfaceSetter);
-                }
+                extension.Apply(classBuilder);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error building class with extension {ExtensionName}", extension.GetType().Name);
+                throw;
             }
         }
+        return classBuilder.CreateTypeInfo();
+        //var tb = moduleBuilder.DefineType($"{classDefinition.Solution}.{classDefinition.ClassName}", TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
+        //var propertyMap = new Dictionary<string, (PropertyBuilder property, FieldBuilder field, MethodBuilder getter, MethodBuilder setter)>();
 
-        return tb.CreateTypeInfo()!;
+        //// Add properties
+        //foreach (var property in classDefinition.Properties.Where(p => p.DeclaringType == null))
+        //{
+        //    var field = tb.DefineField($"_{property.Name}", property.ClrType, FieldAttributes.Private);
+
+        //    var propertyBuilder = tb.DefineProperty(property.Name, PropertyAttributes.HasDefault, property.ClrType, null);
+
+        //    // Define the getter for the property
+        //    var getter = tb.DefineMethod($"get_{property.Name}",
+        //        MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
+        //        property.ClrType, Type.EmptyTypes);
+        //    var getIL = getter.GetILGenerator();
+        //    getIL.Emit(OpCodes.Ldarg_0);
+        //    getIL.Emit(OpCodes.Ldfld, field);
+        //    getIL.Emit(OpCodes.Ret);
+
+        //    // Define the setter for the property
+        //    var setter = tb.DefineMethod($"set_{property.Name}",
+        //        MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
+        //        null, new[] { property.ClrType });
+        //    var setIL = setter.GetILGenerator();
+        //    setIL.Emit(OpCodes.Ldarg_0);
+        //    setIL.Emit(OpCodes.Ldarg_1);
+        //    setIL.Emit(OpCodes.Stfld, field);
+        //    setIL.Emit(OpCodes.Ret);
+
+        //    propertyBuilder.SetGetMethod(getter);
+        //    propertyBuilder.SetSetMethod(setter);
+
+        //    propertyMap[property.Name] = (propertyBuilder, field, getter, setter);
+        //}
+
+        //// Add interfaces
+        //foreach (var interfaceType in classDefinition.Interfaces)
+        //{
+        //    tb.AddInterfaceImplementation(interfaceType);
+
+        //    foreach (var interfaceProp in interfaceType.GetProperties())
+        //    {
+        //        if (!propertyMap.TryGetValue(interfaceProp.Name, out var memberInfo))
+        //            throw new InvalidOperationException($"Property '{interfaceProp.Name}' required by interface '{interfaceType.FullName}' is not defined in ClassDefinition.");
+
+        //        if (interfaceProp.GetGetMethod() is MethodInfo interfaceGetter)
+        //            tb.DefineMethodOverride(memberInfo.getter, interfaceGetter);
+
+        //        if (interfaceProp.GetSetMethod() is MethodInfo interfaceSetter)
+        //            tb.DefineMethodOverride(memberInfo.setter, interfaceSetter);
+        //    }
+        //}
+
+        //return tb.CreateTypeInfo()!;
     }
 
     /// <summary>
@@ -140,29 +152,43 @@ public class TypeService
     {
         if (classDefinition is null)
             throw new ArgumentNullException(nameof(classDefinition), "Class definition cannot be null.");
-
-        var solution = classDefinition.Solution;
-        var className = classDefinition.ClassName;
-
-        // Get or create the solution dictionary
-        var classes = _solutions.GetOrAdd(solution, _ => new ConcurrentDictionary<SafeString, ClassDefinition>());
-
-        // Check if the class definition already exists
-        if (classes.TryGetValue(className, out var existingDefinition))
-        {
-            // If the definition matches, return the type
-            // Otherwise, rebuild the type (optional: you may want to compare definitions for changes)
-            return Type.GetType($"{solution.Value}.{className.Value}") 
-                ?? BuildType(existingDefinition);
-        }
-        else
-        {
-            // Add the new class definition and build the type
-            classes[className] = classDefinition;
-            return BuildType(classDefinition);
-        }
+        _solutions
+            .GetOrAdd(classDefinition.Solution, _ => new ConcurrentDictionary<SafeString, ClassDefinition>())
+            .GetOrAdd(classDefinition.ClassName, classDefinition);
+        return _types.GetOrAdd(classDefinition.FullName, _ => BuildType(classDefinition));
     }
 
+    public IEnumerable<Type> GetTypes() => _types.Values;
+    public IEnumerable<Type> GetTypes(SafeString solution) => _types.Where(t => t.Key.Value.StartsWith($"{solution}.")).Select(t => t.Value);
+
+    public IEnumerable<string> GetSolutions() => _solutions.Keys.Select(s => s.Value);
+
+    public Type? GetType(string solution, string className)
+    {
+        return _types.GetValueOrDefault($"{solution}.{className}");
+    }
+
+    public ClassDefinition? GetClassDefinition(Type type)
+    {
+        var parts = type.FullName?.Split('.');
+        var solution = parts?.Length > 1 ? parts[0] : null;
+        var className = parts?.Length > 1 ? string.Join('.', parts.Skip(1)) : type.FullName;
+        if (solution is null || className is null)
+            return null;
+        if (_solutions.TryGetValue(solution, out var classes))
+        {
+            if (classes.TryGetValue(className, out var classDef))
+                return classDef;
+        }
+        return null;
+    }
+
+    public IEnumerable<ClassDefinition> GetClassDefinitions(SafeString solution)
+    {
+        if (_solutions.TryGetValue(solution, out var classes))
+            return classes.Values;
+        return Enumerable.Empty<ClassDefinition>();
+    }
 
     //public void AddDatabase(string connectionString, string tablePattern)
     //{
