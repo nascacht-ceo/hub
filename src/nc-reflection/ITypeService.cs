@@ -19,7 +19,7 @@ namespace nc.Reflection
         /// </summary>
         /// <param name="classDefinition">The definition of the class for which to retrieve the type.</param>
         /// <returns>The <see cref="Type"/> that corresponds to the provided class definition.</returns>
-        public Type GetClass(ClassDefinition classDefinition);
+        public Type GetModel(ModelDefinition classDefinition);
 
         /// <summary>
         /// Retrieves a collection of solutions available in the current context.
@@ -53,9 +53,9 @@ namespace nc.Reflection
         /// </summary>
         /// <param name="solution">A <see cref="SafeString"/> representing the solution from which to extract class definitions.  This
         /// parameter cannot be null or empty.</param>
-        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="ClassDefinition"/> objects representing the classes  defined
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="ModelDefinition"/> objects representing the classes  defined
         /// in the provided solution. Returns an empty collection if no class definitions are found.</returns>
-        public IEnumerable<ClassDefinition> GetClassDefinitions(SafeString solution);
+        public IEnumerable<ModelDefinition> GetModelDefinitions(SafeString solution);
 
     }
 }

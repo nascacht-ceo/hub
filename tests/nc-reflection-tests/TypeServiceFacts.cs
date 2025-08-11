@@ -17,9 +17,9 @@ public class TypeServiceFacts
         public void BuildsType()
         {
             var typeService = new TypeService();
-            var classDefinition = new ClassDefinition
+            var modelDefinition = new ModelDefinition
             {
-                ClassName = "BuildsTypeClass",
+                ModelName = "BuildsTypeClass",
                 Solution = "TestSolution",
                 Properties = new List<PropertyDefinition>
                 {
@@ -36,7 +36,7 @@ public class TypeServiceFacts
                     }
                 }
             };
-            var type = typeService.GetClass(classDefinition);
+            var type = typeService.GetModel(modelDefinition);
             Assert.NotNull(type);
             Assert.Equal("BuildsTypeClass", type.Name);
             Assert.StartsWith("TestSolution", type.Assembly.FullName);
@@ -46,18 +46,18 @@ public class TypeServiceFacts
         public void SegregatesBySolution()
         {
             var typeService = new TypeService();
-            var classDefinition1 = new ClassDefinition
+            var classDefinition1 = new ModelDefinition
             {
-                ClassName = "ClassA",
+                ModelName = "ClassA",
                 Solution = "SolutionA"
             };
-            var classDefinition2 = new ClassDefinition
+            var classDefinition2 = new ModelDefinition
             {
-                ClassName = "ClassA",
+                ModelName = "ClassA",
                 Solution = "SolutionB"
             };
-            var type1 = typeService.GetClass(classDefinition1);
-            var type2 = typeService.GetClass(classDefinition2);
+            var type1 = typeService.GetModel(classDefinition1);
+            var type2 = typeService.GetModel(classDefinition2);
             Assert.NotNull(type1);
             Assert.NotNull(type2);
             Assert.NotEqual(type1.Assembly, type2.Assembly);
@@ -76,9 +76,9 @@ public class TypeServiceFacts
         {
             var typeService = new TypeService();
             var interfaceType = typeof(ITestInterface<>).MakeGenericType(identityType);
-            var classDefinition = new ClassDefinition
+            var classDefinition = new ModelDefinition
             {
-                ClassName = name,
+                ModelName = name,
                 Solution = "TestSolution",
                 Properties = new List<PropertyDefinition>
                 {
@@ -94,7 +94,7 @@ public class TypeServiceFacts
                     interfaceType
                 }
             };
-            var type = typeService.GetClass(classDefinition);
+            var type = typeService.GetModel(classDefinition);
             Assert.NotNull(type);
             Assert.Equal(name, type.Name);
             // Assert.IsAssignableFrom<ITestInterface<long>>(type);
@@ -109,9 +109,9 @@ public class TypeServiceFacts
         public void IgnoresUnsupportedInterfaces()
         {
             var typeService = new TypeService();
-            var classDefinition = new ClassDefinition
+            var classDefinition = new ModelDefinition
             {
-                ClassName = "IgnoresUnsupportedInterfacesClass",
+                ModelName = "IgnoresUnsupportedInterfacesClass",
                 Solution = "TestSolution",
                 Interfaces = new HashSet<Type>
                 {
@@ -121,7 +121,7 @@ public class TypeServiceFacts
 
             Assert.Throws<MissingMemberException>(() =>
             {
-                var type = typeService.GetClass(classDefinition);
+                var type = typeService.GetModel(classDefinition);
             });
         }
 
@@ -129,16 +129,16 @@ public class TypeServiceFacts
         public void AddsInterfacesWithDefaultImplementation()
         {
             var typeService = new TypeService();
-            var classDefinition = new ClassDefinition
+            var classDefinition = new ModelDefinition
             {
-                ClassName = "CalculatorClass",
+                ModelName = "CalculatorClass",
                 Solution = "TestSolution",
                 Interfaces = new HashSet<Type>
                 {
                     typeof(Calculator)
                 }
             };
-            var type = typeService.GetClass(classDefinition);
+            var type = typeService.GetModel(classDefinition);
             Assert.NotNull(type);
             Assert.Equal("CalculatorClass", type.Name);
             Assert.True(typeof(Calculator).IsAssignableFrom(type));
@@ -152,13 +152,13 @@ public class TypeServiceFacts
         public void DerivesFromBaseClass()
         {
             var typeService = new TypeService();
-            var classDefinition = new ClassDefinition
+            var classDefinition = new ModelDefinition
             {
-                ClassName = "DerivedClass",
+                ModelName = "DerivedClass",
                 Solution = "TestSolution",
                 BaseClass = typeof(SampleBaseClass)
             };
-            var type = typeService.GetClass(classDefinition);
+            var type = typeService.GetModel(classDefinition);
             Assert.NotNull(type);
             Assert.Equal("DerivedClass", type.Name);
             Assert.True(typeof(SampleBaseClass).IsAssignableFrom(type));

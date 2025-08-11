@@ -91,7 +91,7 @@ ORDER BY c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION;
                 _ => typeof(object)
             };
 
-        public async IAsyncEnumerable<ClassDefinition> DiscoverClasses(string solutionNamespace, string? schemaFilter = "%", string? tableFilter = "%", [EnumeratorCancellation]CancellationToken cancellation = default)
+        public async IAsyncEnumerable<ModelDefinition> DiscoverModels(string solutionNamespace, string? schemaFilter = "%", string? tableFilter = "%", [EnumeratorCancellation]CancellationToken cancellation = default)
         {
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
@@ -117,8 +117,8 @@ ORDER BY c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION;
                 string? refTable = reader.IsDBNull(7) ? null : reader.GetString(7);
                 string? refColumn = reader.IsDBNull(8) ? null : reader.GetString(8);
 
-                string className = $"{schema}_{table}";
-                string? referencedClassName = refSchema != null && refTable != null
+                string modelName = $"{schema}_{table}";
+                string? referencedModelName = refSchema != null && refTable != null
                     ? $"{refSchema}_{refTable}"
                     : null;
 
@@ -136,14 +136,14 @@ ORDER BY c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION;
                 if (!tableMap.TryGetValue(key, out var list))
                     tableMap[key] = list = new();
 
-                list.Add((property, referencedClassName));
+                list.Add((property, referencedModelName));
             }
 
-            var results = new List<ClassDefinition>();
+            var results = new List<ModelDefinition>();
 
             foreach (var ((schema, table), propList) in tableMap)
             {
-                var className = $"{schema}_{table}";
+                var modelName = $"{schema}_{table}";
                 var properties = new List<PropertyDefinition>();
 
                 foreach (var (prop, referencedClassName) in propList)
@@ -168,9 +168,9 @@ ORDER BY c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION;
                     //        properties.Add(navProp);
                     //}
                 }
-                yield return new ClassDefinition
+                yield return new ModelDefinition
                 {
-                    ClassName = className,
+                    ModelName = modelName,
                     Properties = properties,
                     Solution = new SafeString(solutionNamespace),
                     Interfaces = new HashSet<Type>(), // Add default interfaces if needed

@@ -27,9 +27,9 @@ public class EFFacts : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var sqlReflection = new SqlReflection(ConnectionString);
-        await foreach (var classDefinition in sqlReflection.DiscoverClasses("AdventureWorks", "Person", "%"))
+        await foreach (var modelDefinition in sqlReflection.DiscoverModels("AdventureWorks", "Person", "%"))
         {
-            var type = _typeService.GetClass(classDefinition);
+            var type = _typeService.GetModel(modelDefinition);
             Assert.NotNull(type);
         }
     }
@@ -46,9 +46,9 @@ public class EFFacts : IAsyncLifetime
             .UseInMemoryDatabase("DynamicDbTest")
             .Options;
 
-        var sampleDefinition = new ClassDefinition<SampleClass>();
+        var sampleDefinition = new ModelDefinition<SampleClass>();
         sampleDefinition.Properties.First(p => p.Name == "Id").IsKey = true;
-        var sampleType = _typeService.GetClass(sampleDefinition);
+        var sampleType = _typeService.GetModel(sampleDefinition);
 
         // Act
         using (var context = new DynamicDbContext(options, _typeService, new[] { sampleDefinition }))
@@ -98,7 +98,7 @@ public class EFFacts : IAsyncLifetime
 
         var types = _typeService.GetTypes("AdventureWorks").ToList();
         var addressType = types.First(t => t.Name == "Person_Address");
-        using var context = new DynamicDbContext(options, _typeService, _typeService.GetClassDefinitions("AdventureWorks"));
+        using var context = new DynamicDbContext(options, _typeService, _typeService.GetModelDefinitions("AdventureWorks"));
 
         var set = (IQueryable)typeof(DbContext)
             .GetMethod("Set", Type.EmptyTypes)!
@@ -111,9 +111,9 @@ public class EFFacts : IAsyncLifetime
     public class DynamicDbContext : DbContext
     {
         private readonly ITypeService _typeService;
-        private readonly IEnumerable<ClassDefinition> _classDefinitions;
+        private readonly IEnumerable<ModelDefinition> _classDefinitions;
 
-        public DynamicDbContext(DbContextOptions options, ITypeService typeService, IEnumerable<ClassDefinition> classDefinitions)
+        public DynamicDbContext(DbContextOptions options, ITypeService typeService, IEnumerable<ModelDefinition> classDefinitions)
             : base(options)
         {
             _typeService = typeService;
@@ -133,12 +133,12 @@ public class EFFacts : IAsyncLifetime
             //    v => Point.Parse(v)) }
         };
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder modelBuilder)
         {
             foreach (var definition in _classDefinitions)
             {
-                var type = _typeService.GetClass(definition);
-                var entity = modelBuilder.Entity(type).ToTable(definition.ClassName.Value.Substring(7), "Person");
+                var type = _typeService.GetModel(definition);
+                var entity = modelBuilder.Entity(type).ToTable(definition.ModelName.Value.Substring(7), "Person");
                 var keys = definition.Properties.Where(p => p.IsKey).Select(p => p.Name);
                 if (keys.IsNullOrEmpty())
                     entity.HasNoKey();

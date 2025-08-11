@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace nc.Reflection
 {
-    public class ClassBuilder
+    public class ModelBuilder
     {
         public readonly ModuleBuilder ModuleBuilder;
-        public readonly ClassDefinition ClassDefinition;
+        public readonly ModelDefinition ClassDefinition;
         public readonly TypeBuilder TypeBuilder;
         public readonly IDictionary<string, ClassProperty> PropertyMap;
 
-        public ClassBuilder(ModuleBuilder moduleBuilder, ClassDefinition classDefinition)
+        public ModelBuilder(ModuleBuilder moduleBuilder, ModelDefinition classDefinition)
         {
             ModuleBuilder = moduleBuilder;
             ClassDefinition = classDefinition;

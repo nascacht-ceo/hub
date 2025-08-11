@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 namespace nc.Reflection;
 
 /// <summary>
-/// Provides functionality for dynamically creating .NET types at runtime based on class definitions.
+/// Provides functionality for dynamically creating .NET types at runtime based on model definitions.
 /// </summary>
 /// <remarks>This service is designed to support scenarios where types need to be generated dynamically, such as
 /// for runtime data modeling or dynamic proxy generation. It uses reflection emit to define types and their properties,
@@ -14,9 +14,9 @@ namespace nc.Reflection;
 public class TypeService: ITypeService
 {
     /// <summary>
-    /// Track a solution and it's classes.
+    /// Track a solution and it's models.
     /// </summary>
-    private readonly ConcurrentDictionary<SafeString, ConcurrentDictionary<SafeString, ClassDefinition>> _solutions = new();
+    private readonly ConcurrentDictionary<SafeString, ConcurrentDictionary<SafeString, ModelDefinition>> _solutions = new();
     private readonly ConcurrentDictionary<SafeString, Type> _types = new();
 
     /// <summary>
@@ -35,7 +35,7 @@ public class TypeService: ITypeService
     /// <summary>
     /// Creates a <see cref="ModuleBuilder"/> for the given solution namespace.
     /// </summary>
-    /// <param name="solution">Name of the solution this class belongs to.</param>
+    /// <param name="solution">Name of the solution this model belongs to.</param>
     /// <returns><see cref="ModuleBuilder"/> uses to create types with a namespace of <paramref name="solution"/></returns>
     private ModuleBuilder GetModuleBuilder(SafeString solution)
     {
@@ -53,40 +53,40 @@ public class TypeService: ITypeService
     }
 
     /// <summary>
-    /// Dynamically builds a .NET type based on the provided class definition.
+    /// Dynamically builds a .NET type based on the provided model definition.
     /// </summary>
     /// <remarks>This method uses reflection emit to dynamically create a class with public properties based
-    /// on the provided <paramref name="classDefinition"/>. Each property includes a private backing field, a getter,
+    /// on the provided <paramref name="modelDefinition"/>. Each property includes a private backing field, a getter,
     /// and a setter.</remarks>
-    /// <param name="classDefinition">The definition of the class, including its properties and their types. Cannot be null.</param>
+    /// <param name="modelDefinition">The definition of the model, including its properties and their types. Cannot be null.</param>
     /// <returns>A <see cref="Type"/> representing the dynamically created class.</returns>
-    private Type BuildType(ClassDefinition classDefinition)
+    private Type BuildType(ModelDefinition modelDefinition)
     {
-        if (classDefinition is null)
-            throw new ArgumentNullException(nameof(classDefinition), "Class definition cannot be null.");
+        if (modelDefinition is null)
+            throw new ArgumentNullException(nameof(modelDefinition), "Model definition cannot be null.");
 
-        classDefinition.Validate();
+        modelDefinition.Validate();
 
         using var activity = Tracing.Source.StartActivity("TypeService.BuildType", System.Diagnostics.ActivityKind.Internal);
-        activity?.SetTag("Solution", classDefinition.Solution);
-        activity?.SetTag("ClassName", classDefinition.ClassName);
+        activity?.SetTag("Solution", modelDefinition.Solution);
+        activity?.SetTag("ModelName", modelDefinition.ModelName);
 
-        var moduleBuilder = GetModuleBuilder(classDefinition.Solution);
+        var moduleBuilder = GetModuleBuilder(modelDefinition.Solution);
 
-        var classBuilder = new ClassBuilder(moduleBuilder, classDefinition);
+        var modelBuilder = new ModelBuilder(moduleBuilder, modelDefinition);
         foreach (var extension in _extensions)
         {
             try
             {
-                extension.Apply(classBuilder);
+                extension.Apply(modelBuilder);
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error building class with extension {ExtensionName}", extension.GetType().Name);
+                _logger?.LogError(ex, "Error building model with extension {ExtensionName}", extension.GetType().Name);
                 throw;
             }
         }
-        return classBuilder.CreateTypeInfo();
+        return modelBuilder.CreateTypeInfo();
         //var tb = moduleBuilder.DefineType($"{classDefinition.Solution}.{classDefinition.ClassName}", TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
         //var propertyMap = new Dictionary<string, (PropertyBuilder property, FieldBuilder field, MethodBuilder getter, MethodBuilder setter)>();
 
@@ -144,18 +144,18 @@ public class TypeService: ITypeService
     }
 
     /// <summary>
-    /// Retrieves the <see cref="Type"/> associated with the given class definition, creating it if it doesn't exist.
+    /// Retrieves the <see cref="Type"/> associated with the given model definition, creating it if it doesn't exist.
     /// </summary>
-    /// <param name="classDefinition">The definition of the class whose type is to be retrieved. Cannot be null.</param>
+    /// <param name="modelDefinition">The definition of the model whose type is to be retrieved. Cannot be null.</param>
     /// <returns>A <see cref="Type"/> representing the class.</returns>
-    public Type GetClass(ClassDefinition classDefinition)
+    public Type GetModel(ModelDefinition modelDefinition)
     {
-        if (classDefinition is null)
-            throw new ArgumentNullException(nameof(classDefinition), "Class definition cannot be null.");
+        if (modelDefinition is null)
+            throw new ArgumentNullException(nameof(modelDefinition), "Model definition cannot be null.");
         _solutions
-            .GetOrAdd(classDefinition.Solution, _ => new ConcurrentDictionary<SafeString, ClassDefinition>())
-            .GetOrAdd(classDefinition.ClassName, classDefinition);
-        return _types.GetOrAdd(classDefinition.FullName, _ => BuildType(classDefinition));
+            .GetOrAdd(modelDefinition.Solution, _ => new ConcurrentDictionary<SafeString, ModelDefinition>())
+            .GetOrAdd(modelDefinition.ModelName, modelDefinition);
+        return _types.GetOrAdd(modelDefinition.FullName, _ => BuildType(modelDefinition));
     }
 
     public IEnumerable<Type> GetTypes() => _types.Values;
@@ -163,31 +163,31 @@ public class TypeService: ITypeService
 
     public IEnumerable<string> GetSolutions() => _solutions.Keys.Select(s => s.Value);
 
-    public Type? GetType(string solution, string className)
+    public Type? GetType(string solution, string modelName)
     {
-        return _types.GetValueOrDefault($"{solution}.{className}");
+        return _types.GetValueOrDefault($"{solution}.{modelName}");
     }
 
-    public ClassDefinition? GetClassDefinition(Type type)
+    public ModelDefinition? GetModelDefinition(Type type)
     {
         var parts = type.FullName?.Split('.');
         var solution = parts?.Length > 1 ? parts[0] : null;
-        var className = parts?.Length > 1 ? string.Join('.', parts.Skip(1)) : type.FullName;
-        if (solution is null || className is null)
+        var modelName = parts?.Length > 1 ? string.Join('.', parts.Skip(1)) : type.FullName;
+        if (solution is null || modelName is null)
             return null;
-        if (_solutions.TryGetValue(solution, out var classes))
+        if (_solutions.TryGetValue(solution, out var models))
         {
-            if (classes.TryGetValue(className, out var classDef))
-                return classDef;
+            if (models.TryGetValue(modelName, out var modelDefinition))
+                return modelDefinition;
         }
         return null;
     }
 
-    public IEnumerable<ClassDefinition> GetClassDefinitions(SafeString solution)
+    public IEnumerable<ModelDefinition> GetModelDefinitions(SafeString solution)
     {
-        if (_solutions.TryGetValue(solution, out var classes))
-            return classes.Values;
-        return Enumerable.Empty<ClassDefinition>();
+        if (_solutions.TryGetValue(solution, out var models))
+            return models.Values;
+        return Enumerable.Empty<ModelDefinition>();
     }
 
     //public void AddDatabase(string connectionString, string tablePattern)

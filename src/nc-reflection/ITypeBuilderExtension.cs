@@ -11,5 +11,5 @@ public interface ITypeBuilderExtension
     /// Modify the <paramref name="classBuilder"/>.
     /// </summary>
     /// <param name="classBuilder"></param>
-    void Apply(ClassBuilder classBuilder);
+    void Apply(ModelBuilder classBuilder);
 }
