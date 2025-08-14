@@ -1,0 +1,35 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="coding.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="readme.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="nc-data/nc-data.csproj" />
+    <Project Path="nc-mediatr-extensions/nc-mediatr-extensions.csproj" />
+    <Project Path="src/nc-ai/nc-ai.csproj" />
+    <Project Path="src/nc-aws/nc-aws.csproj" />
+    <Project Path="src/nc-azure/nc-azure.csproj" />
+    <Project Path="src/nc-cloud/nc-cloud.csproj" />
+    <Project Path="src/nc-extensions/nc-extensions.csproj" />
+    <Project Path="src/nc-hub/nc-hub.csproj" />
+    <Project Path="src/nc-openapi/nc-openapi.csproj" />
+    <Project Path="src/nc-reflection/nc-reflection.csproj" />
+    <Project Path="src/nc-source-generators/nc-source-generators.csproj" />
+    <Project Path="src/nc-web/nc-web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="nc-data-tests/nc-data-tests.csproj" />
+    <Project Path="tests/nc-azure-functions/sample/sample.csproj" />
+    <Project Path="tests/nc-azure-tests/nc-azure-tests.csproj" />
+    <Project Path="tests/nc-cloud-tests/nc-cloud-tests.csproj" />
+    <Project Path="tests/nc-extensions-tests/nc-extensions-tests.csproj" />
+    <Project Path="tests/nc-graphql-sample/nc-graphql-sample.csproj" />
+    <Project Path="tests/nc-hub-tests/nc-hub-tests.csproj" />
+    <Project Path="tests/nc-openapi-tests/nc-openapi-tests.csproj" />
+    <Project Path="tests/nc-reflection-tests/nc-reflection-tests.csproj" />
+    <Project Path="tests/nc-spark-tests/nc-spark-tests.csproj" />
+    <Project Path="tests/nc-web-tests/nc-web-tests.csproj" />
+  </Folder>
+</Solution>
