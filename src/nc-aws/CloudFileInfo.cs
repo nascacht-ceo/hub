@@ -25,7 +25,7 @@ public class CloudFileInfo : ICloudFileInfo
         Path = s3Object.Key;
         Exists = true;
         IsDirectory = s3Object.Key.EndsWith("/");
-        Length = s3Object.Size;
+        Length = s3Object.Size ?? 0;
         LastModified = s3Object.LastModified;
         Metadata = new Dictionary<string, string?>(); // Metadata is not included in S3Object, needs a separate call
         ETag = s3Object.ETag;

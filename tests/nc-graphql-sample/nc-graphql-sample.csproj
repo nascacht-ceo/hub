@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>nc_graphql_sample</RootNamespace>
+    <RootNamespace>nc.Graphql.Sample</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

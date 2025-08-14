@@ -15,8 +15,8 @@ public class ModelDefinition : IValidateOptions<ModelDefinition>
 {
     public ModelDefinition()
     {
-        Properties = Enumerable.Empty<PropertyDefinition>();
-        Interfaces = new();
+        Properties = [];
+        Interfaces = [];
     }
 
     /// <summary>
@@ -26,15 +26,14 @@ public class ModelDefinition : IValidateOptions<ModelDefinition>
         : this()
     {
         BaseClass = type;
-        Properties = type
+        Properties = [.. type
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .Select(p => new PropertyDefinition
             {
                 Name = p.Name,
                 ClrType = p.PropertyType,
                 DeclaringType = p.DeclaringType
-            })
-            .ToList();
+            })];
 
         ModelName = new SafeString(type.Name);
         Solution = new SafeString(type.Namespace ?? "Anonymous");
@@ -94,7 +93,7 @@ public class ModelDefinition : IValidateOptions<ModelDefinition>
 
     public void Validate()
     {
-        var definedProps = Properties?.ToDictionary(p => p.Name) ?? new();
+        var definedProps = Properties?.ToDictionary(p => p.Name) ?? [];
 
         foreach (var interfaceType in Interfaces)
         {

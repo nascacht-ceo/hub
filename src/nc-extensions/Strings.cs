@@ -22,6 +22,6 @@ public static class StringExtensions
             .Replace("\\*", ".*")
             .Replace("\\?", ".") + "$";
 
-        return Regex.IsMatch(input, regexPattern, options, TimeSpan.FromMicroseconds(milliseconds));
+        return Regex.IsMatch(input, regexPattern, options, TimeSpan.FromMilliseconds(milliseconds));
     }
 }

@@ -17,7 +17,7 @@ namespace nc.Reflection.Tests;
 public class EFFacts : IAsyncLifetime
 {
     private readonly TypeService _typeService;
-    private static string ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AdventureWorks;Trusted_Connection=True;";
+    private static readonly string ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AdventureWorks;Trusted_Connection=True;";
 
     public EFFacts()
     {
@@ -51,7 +51,7 @@ public class EFFacts : IAsyncLifetime
         var sampleType = _typeService.GetModel(sampleDefinition);
 
         // Act
-        using (var context = new DynamicDbContext(options, _typeService, new[] { sampleDefinition }))
+        using (var context = new DynamicDbContext(options, _typeService, [sampleDefinition]))
         {
             context.Database.EnsureCreated();
 
@@ -65,7 +65,7 @@ public class EFFacts : IAsyncLifetime
         }
 
         object? fetched;
-        using (var context = new DynamicDbContext(options, _typeService, new[] { sampleDefinition }))
+        using (var context = new DynamicDbContext(options, _typeService, [sampleDefinition]))
         {
             var set = (IQueryable)typeof(DbContext)
                 .GetMethod("Set", Type.EmptyTypes)!
@@ -138,12 +138,12 @@ public class EFFacts : IAsyncLifetime
             foreach (var definition in _classDefinitions)
             {
                 var type = _typeService.GetModel(definition);
-                var entity = modelBuilder.Entity(type).ToTable(definition.ModelName.Value.Substring(7), "Person");
+                var entity = modelBuilder.Entity(type).ToTable(definition.ModelName.Value[7..], "Person");
                 var keys = definition.Properties.Where(p => p.IsKey).Select(p => p.Name);
                 if (keys.IsNullOrEmpty())
                     entity.HasNoKey();
                 else
-                    entity.HasKey(keys.ToArray());
+                    entity.HasKey([.. keys]);
 
 
                 foreach (var prop in type.GetProperties())
@@ -152,8 +152,8 @@ public class EFFacts : IAsyncLifetime
                     {
                         modelBuilder.Entity(type).Ignore(prop.Name);
                     }
-                    if (ValueConverters.ContainsKey(prop.PropertyType))
-                        modelBuilder.Entity(type).Property(prop.Name).HasConversion(ValueConverters[prop.PropertyType]);
+                    if (ValueConverters.TryGetValue(prop.PropertyType, out ValueConverter? value))
+                        modelBuilder.Entity(type).Property(prop.Name).HasConversion(value);
 
                     //if (prop.PropertyType == typeof(string))
                     //{

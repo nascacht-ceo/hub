@@ -15,8 +15,8 @@ public class Author
 public class Query
 {
     public Book GetBook() =>
-        new Book
-        {
+        new()
+		{
             Title = "C# in depth.",
             Author = new Author
             {

@@ -90,7 +90,7 @@ public class CloudFileProvider : ICloudFileProvider
 
             listRequest.ContinuationToken = listResponse.NextContinuationToken;
 
-        } while (listResponse.IsTruncated);
+        } while (listResponse.IsTruncated ?? false);
     }
 
     public async Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
@@ -126,7 +126,7 @@ public class CloudFileProvider : ICloudFileProvider
 
                     listRequest.ContinuationToken = listResponse.NextContinuationToken;
 
-                } while (listResponse.IsTruncated);
+                } while (listResponse.IsTruncated ?? false);
 
                 if (objectsToDelete.Any())
                 {

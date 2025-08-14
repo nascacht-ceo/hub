@@ -8,22 +8,14 @@ using System.Threading.Tasks;
 
 namespace nc.Reflection
 {
-    public class ModelBuilder
-    {
-        public readonly ModuleBuilder ModuleBuilder;
-        public readonly ModelDefinition ClassDefinition;
-        public readonly TypeBuilder TypeBuilder;
-        public readonly IDictionary<string, ClassProperty> PropertyMap;
+    public class ModelBuilder(ModuleBuilder moduleBuilder, ModelDefinition classDefinition)
+	{
+        public readonly ModuleBuilder ModuleBuilder = moduleBuilder;
+        public readonly ModelDefinition ClassDefinition = classDefinition;
+        public readonly TypeBuilder TypeBuilder = moduleBuilder.DefineType($"{classDefinition.FullName}", TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
+        public readonly IDictionary<string, ClassProperty> PropertyMap = new Dictionary<string, ClassProperty>();
 
-        public ModelBuilder(ModuleBuilder moduleBuilder, ModelDefinition classDefinition)
-        {
-            ModuleBuilder = moduleBuilder;
-            ClassDefinition = classDefinition;
-            TypeBuilder = moduleBuilder.DefineType($"{classDefinition.FullName}", TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
-            PropertyMap = new Dictionary<string, ClassProperty>();
-        }
-
-        public Type CreateTypeInfo()
+		public Type CreateTypeInfo()
         {
             BuildProperties();
             BuildInterfaces();
@@ -93,7 +85,7 @@ namespace nc.Reflection
             // Define the setter for the property
             Setter = typeBuilder.DefineMethod($"set_{property.Name}",
                 MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
-                null, new[] { property.ClrType });
+                null, [property.ClrType]);
             var setIL = Setter.GetILGenerator();
             setIL.Emit(OpCodes.Ldarg_0);
             setIL.Emit(OpCodes.Ldarg_1);

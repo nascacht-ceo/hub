@@ -1,4 +1,15 @@
-﻿The `nc-hub` solution is sugar around streaming transformations.
+﻿# Overview
+
+Build solutions via configuration:
+
+{
+	"nc": {
+		"solutions": 
+	}
+}
+
+
+The `nc-hub` solution is sugar around streaming transformations.
 
 Examples include:
 
@@ -101,3 +112,15 @@ Language SDKs:
 - BPMN-based workflow engine.
 - Works across clouds.
 
+# Development Policies
+
+## Keep Packages Updated
+
+- Use `dotnet outdated` to check for outdated packages.
+
+```bash
+dotnet tool install --global dotnet-outdated-tool
+dotnet outdated
+dotnet outdated -u
+dotnet outdated -u -pre Always -inc "nc-*"
+```

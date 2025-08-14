@@ -1,16 +1,23 @@
 ﻿using Microsoft.CodeAnalysis;
+using System.Linq;
 
 namespace nc.SourceGenerators;
 
+// Specify supported languages to avoid RS1041 when targeting .NET 9.0
 [Generator]
-public class TraceGenerator : ISourceGenerator
+public class TraceGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
+	public void Initialize(IncrementalGeneratorInitializationContext context)
+	{
+		// 1. Create a provider for the compilation's AssemblyName
+		IncrementalValueProvider<string> assemblyNameProvider =
+			context.CompilationProvider
+				.Select((compilation, cancellationToken) => compilation.AssemblyName ?? string.Empty);
 
-    public void Execute(GeneratorExecutionContext context)
-    {
-        var assemblyName = context.Compilation.AssemblyName;
-        var source = $$"""
+		// 2. Register a source output using the AssemblyNameProvider
+		context.RegisterSourceOutput(assemblyNameProvider, (productionContext, assemblyName) =>
+		{
+			var source = $$"""
 namespace nc;
 
 public static class Tracing
@@ -19,7 +26,7 @@ public static class Tracing
         new("{{assemblyName}}");
 }
 """;
-        context.AddSource("Tracing.g.cs", source);
-    }
+			productionContext.AddSource("Tracing.g.cs", source);
+		});
+	}
 }
-

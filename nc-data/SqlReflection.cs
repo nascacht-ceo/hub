@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using nc.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -7,12 +8,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace nc.Reflection.Tests
+namespace nc.Data
 {
     public class SqlReflection
     {
         private readonly string _connectionString;
-        private static readonly string _query = @"
+        private static string _query = @"
 SELECT 
     c.TABLE_SCHEMA,
     c.TABLE_NAME,
