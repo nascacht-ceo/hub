@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>nc.Data.Tests</RootNamespace>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>nc.Aws.Tests</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nc-data\nc-data.csproj" />
-    <ProjectReference Include="..\src\nc-reflection\nc-reflection.csproj" />
+    <ProjectReference Include="..\..\samples\aws-lambda\aws-lambda.csproj" />
+    <ProjectReference Include="..\..\src\nc-aws\nc-aws.csproj" />
   </ItemGroup>
 
   <ItemGroup>

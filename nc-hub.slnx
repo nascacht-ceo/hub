@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/aws-lambda/aws-lambda.csproj" Id="21bd1d72-c1bc-4c36-be14-f66b4d6ab99e" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="coding.md" />
@@ -6,29 +9,34 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="nc-data/nc-data.csproj" />
     <Project Path="nc-mediatr-extensions/nc-mediatr-extensions.csproj" />
     <Project Path="src/nc-ai/nc-ai.csproj" />
     <Project Path="src/nc-aws/nc-aws.csproj" />
     <Project Path="src/nc-azure/nc-azure.csproj" />
     <Project Path="src/nc-cloud/nc-cloud.csproj" />
+    <Project Path="src/nc-data/nc-data.csproj" />
     <Project Path="src/nc-extensions/nc-extensions.csproj" />
+    <Project Path="src/nc-gcp/nc-gcp.csproj" />
     <Project Path="src/nc-hub/nc-hub.csproj" />
     <Project Path="src/nc-openapi/nc-openapi.csproj" />
     <Project Path="src/nc-reflection/nc-reflection.csproj" />
+    <Project Path="src/nc-scaling/nc-scaling.csproj" Id="0d36adc4-5d60-430d-be84-3bcf8ae77114" />
+    <Project Path="src/nc-soap/nc-soap.csproj" Id="f8174e77-4b75-4ab0-87ae-c31863588b1d" />
     <Project Path="src/nc-source-generators/nc-source-generators.csproj" />
     <Project Path="src/nc-web/nc-web.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="nc-data-tests/nc-data-tests.csproj" />
+    <Project Path="test/nc-aws-tests/nc-aws-tests.csproj" Id="28941a1e-e6b8-4eb8-b5c2-fb8300efe74d" />
     <Project Path="tests/nc-azure-functions/sample/sample.csproj" />
     <Project Path="tests/nc-azure-tests/nc-azure-tests.csproj" />
     <Project Path="tests/nc-cloud-tests/nc-cloud-tests.csproj" />
+    <Project Path="tests/nc-data-tests/nc-data-tests.csproj" />
     <Project Path="tests/nc-extensions-tests/nc-extensions-tests.csproj" />
     <Project Path="tests/nc-graphql-sample/nc-graphql-sample.csproj" />
     <Project Path="tests/nc-hub-tests/nc-hub-tests.csproj" />
     <Project Path="tests/nc-openapi-tests/nc-openapi-tests.csproj" />
     <Project Path="tests/nc-reflection-tests/nc-reflection-tests.csproj" />
+    <Project Path="tests/nc-scaling-tests/nc-scaling-tests.csproj" Id="0c231a13-d540-45ec-a780-54e88beca9ab" />
     <Project Path="tests/nc-spark-tests/nc-spark-tests.csproj" />
     <Project Path="tests/nc-web-tests/nc-web-tests.csproj" />
   </Folder>

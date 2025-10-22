@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>nc.Gcp</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Maps.AddressValidation.V1" Version="1.5.0" />
+    <PackageReference Include="Google.Maps.Places.V1" Version="1.0.0-beta15" />
+    <PackageReference Include="Google.Maps.RouteOptimization.V1" Version="1.2.0" />
+    <PackageReference Include="Google.Maps.Routing.V2" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\nc-cloud\nc-cloud.csproj" />
+  </ItemGroup>
+
+</Project>

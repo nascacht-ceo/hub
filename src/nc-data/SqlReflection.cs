@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using nc.Hub;
 using nc.Reflection;
 using System;
 using System.Collections.Generic;

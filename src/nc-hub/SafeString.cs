@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
-namespace nc.Reflection;
-
-using System.Text.RegularExpressions;
+namespace nc.Hub;
 
 public readonly struct SafeString
 {
     public string Value { get; }
 
-    public SafeString(string originalString)
+    public SafeString(string originalString, string replacement = "_")
     {
-        Value = Sanitize(originalString);
+        Value = Sanitize(originalString, replacement);
         if (string.IsNullOrWhiteSpace(Value))
             throw new ArgumentException("Value cannot be null or whitespace after sanitization.", nameof(originalString));
     }
@@ -25,10 +19,10 @@ public readonly struct SafeString
 
     public override string ToString() => Value;
 
-    private static string Sanitize(string input)
+    private static string Sanitize(string input, string replacement = "_")
     {
-        var clean = Regex.Replace(input, @"[^\w\.]", "_"); // Keep letters, digits, underscores, periods
-        if (char.IsDigit(clean[0])) clean = "_" + clean;
+        var clean = Regex.Replace(input, @"[^\w\.]", replacement); // Keep letters, digits, underscores, periods
+        if (char.IsDigit(clean[0])) clean = replacement + clean;
         return clean;
     }
 }

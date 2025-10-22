@@ -1,5 +1,61 @@
 ﻿# Overview
 
+Nascacht (Gaelic for 'connect' or 'bind') is a suite of wrappers 
+that enable implementation of opinionated architectures. 
+The target audience for this suite include:
+
+- developers that need to refactor existing systems
+- business analysts that need to implement domain-specific solutions from existing systems
+
+# Use Cases
+
+```csharp
+var solutions = new SolutionsBuilder()
+	.AddDatabase("Db1", "connection-string")
+	.AddAssembly("MyClass", typeof(MyClass).Assembly)
+	.AddType("OtherClass", typeof(OtherClass))
+	.AddOpenApi("SampleApi", "https://example.com/openapi.json");
+```
+
+## Data Wrappers
+
+- Point to a database, and instantly have endpoints to manipulate enumerations of any table's rows.
+- Map which columns (properties) should be exposed, masked, hidden, or encrypted.
+- Enforce state transitions of models, ensuring that they follow a defined lifecycle.
+- Raise notifications when data changes, consumable by other systems.
+
+## Open API Wrappers
+
+
+ 
+
+|Use Case|Description|
+|-|-|
+|Data|Point a Solutio to a connection string, and instantly have RESTful endpoints to manipilate the data.|
+|CLR Classes|Point a Solution to an assembly (or classes within an assembly), and instantly have RESTful endpoints to manipulate the data.|)
+
+# Patterns
+
+|Pattern|Description|
+|-|-|
+|State Management|Enforce state transitions of models, ensuring that they follow a defined lifecycle.|
+|Rules|Define and enforce business rules on models, ensuring they adhere to specific conditions and constraints.|
+|Encryption|Apply encryption to model properties, ensuring data security and privacy.|
+|Data|Apply these patterns to existing data models.|
+
+
+# Terminology
+
+|Term|Description|
+|-|-|
+|Solution|A collection of models, endpoints, and behaviors that implement a domain-specific solution.|
+|Model|A representation of a business entity, including its properties and behaviors.|
+|Routes|Represent functional endpoints (http, CLR methods, etc.)|
+|Behavior|A specific action or operation that can be performed on a model, often encapsulated as a service or function.|
+
+
+
+
 Build solutions via configuration:
 
 {
@@ -13,7 +69,7 @@ The `nc-hub` solution is sugar around streaming transformations.
 
 Examples include:
 
-|Example | Description |
+|Example|Description|
 |-|-|
 |Document manipulation|Given an enumeration of document streams, OCR, classify and extract metadata, persisting the metadata to the documents|
 |Data transformation|Given a stream of data, transform the data and persist the transformed data to a new stream|

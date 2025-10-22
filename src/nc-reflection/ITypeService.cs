@@ -1,4 +1,5 @@
-﻿using System;
+﻿using nc.Hub;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -57,5 +58,23 @@ namespace nc.Reflection
         /// in the provided solution. Returns an empty collection if no class definitions are found.</returns>
         public IEnumerable<ModelDefinition> GetModelDefinitions(SafeString solution);
 
-    }
+        /// <summary>
+        /// Retrieves the <see cref="ModelDefinition"/> associated with the specified type.
+        /// </summary>
+        /// <param name="type">The type for which to retrieve the model definition. This parameter cannot be <see langword="null"/>.</param>
+        /// <returns>The <see cref="ModelDefinition"/> associated with the specified type, or <see langword="null"/> if no
+        /// definition exists for the type.</returns>
+        public ModelDefinition? GetModelDefinition(Type type);
+
+        /// <summary>
+        /// Retrieves the <see cref="ModelDefinition"/> associated with the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type for which to retrieve the model definition.</typeparam>
+        /// <returns>The <see cref="ModelDefinition"/> for the specified type <typeparamref name="T"/>,  or <see
+        /// langword="null"/> if no definition is found.</returns>
+        public ModelDefinition? GetModelDefinition<T>() => GetModelDefinition(typeof(T));
+
+
+
+	}
 }

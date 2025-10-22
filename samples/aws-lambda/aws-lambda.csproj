@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Sample.Aws.Lambda</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.7.1" />
+    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+
+  </ItemGroup>
+
+  <!--<Target Name="CreateLambda" AfterTargets="Build">
+    <PropertyGroup>
+      <_PublishDir>$(PublishDir)</_PublishDir>
+      <_ZipFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).zip</_ZipFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <_FilesToZip Include="$(_PublishDir)**\*" />
+    </ItemGroup>
+    <ZipFile
+      SourceFiles="@(_FilesToZip)"
+      DestinationFile="$(_ZipFile)"
+      WorkingDirectory="$(_PublishDir)"
+      Overwrite="true" />
+    <Message Importance="high" Text="Created $(_ZipFile) from $(_PublishDir)" />
+  </Target>-->
+
+  <Target Name="CreateLambda" AfterTargets="Publish">
+    <PropertyGroup>
+      <_ContentDir>$(MSBuildProjectDirectory)\$(OutputPath)</_ContentDir>
+      <_ZipFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).lambda.zip</_ZipFile>
+    </PropertyGroup>
+    <Exec Command="pwsh -Command &quot;Compress-Archive -Path '$(_ContentDir)*' -DestinationPath '$(_ZipFile)' -Force&quot;" />
+    <Message Importance="high" Text="Created $(_ZipFile) from $(_PublishDir)" />
+  </Target>
+
+  <Target Name="CreateLambda" AfterTargets="Publish">
+    <PropertyGroup>
+      <_ZipFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).lambda.zip</_ZipFile>
+    </PropertyGroup>
+    <Exec Command="pwsh -Command &quot;Compress-Archive -Path '$(PublishDir)*' -DestinationPath '$(_ZipFile)' -Force&quot;" />
+    <Message Importance="high" Text="Created $(_ZipFile) from $(PublishDir)" />
+  </Target>
+
+</Project>

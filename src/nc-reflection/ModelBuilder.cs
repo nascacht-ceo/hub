@@ -1,4 +1,5 @@
-﻿using System;
+﻿using nc.Hub;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace nc.Reflection
 {
-    public class ModelBuilder(ModuleBuilder moduleBuilder, ModelDefinition classDefinition)
+    public class ModelBuilder(ModuleBuilder moduleBuilder, ModelDefinition modelDefinition)
 	{
         public readonly ModuleBuilder ModuleBuilder = moduleBuilder;
-        public readonly ModelDefinition ClassDefinition = classDefinition;
-        public readonly TypeBuilder TypeBuilder = moduleBuilder.DefineType($"{classDefinition.FullName}", TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
-        public readonly IDictionary<string, ClassProperty> PropertyMap = new Dictionary<string, ClassProperty>();
+        public readonly ModelDefinition ModelDefinition = modelDefinition;
+        public readonly TypeBuilder TypeBuilder = moduleBuilder.DefineType($"{modelDefinition.FullName}", TypeAttributes.Public | TypeAttributes.Class, modelDefinition.BaseClass);
+        public readonly IDictionary<string, ModelProperty> PropertyMap = new Dictionary<string, ModelProperty>();
 
 		public Type CreateTypeInfo()
         {
@@ -24,16 +25,16 @@ namespace nc.Reflection
 
         public void BuildProperties()
         {
-            foreach (var property in ClassDefinition.Properties.Where(p => p.DeclaringType == null))
+            foreach (var property in ModelDefinition.Properties.Where(p => p.DeclaringType == null))
             {
-                var classProperty = new ClassProperty(property, TypeBuilder);
+                var classProperty = new ModelProperty(property, TypeBuilder);
                 PropertyMap[property.Name] = classProperty;
             }
         }
 
         public void BuildInterfaces()
         {
-            foreach (var interfaceType in ClassDefinition.Interfaces)
+            foreach (var interfaceType in ModelDefinition.Interfaces)
             {
                 TypeBuilder.AddInterfaceImplementation(interfaceType);
 
@@ -54,7 +55,7 @@ namespace nc.Reflection
 
     }
 
-    public class ClassProperty
+    public class ModelProperty
     {
         /// <summary>
         /// Represents a dynamically generated property for a class, including its backing field, getter, and setter
@@ -67,7 +68,7 @@ namespace nc.Reflection
         /// <param name="property">The definition of the property, including its name and CLR type.</param>
         /// <param name="typeBuilder">The <see cref="TypeBuilder"/> used to define the property and its associated methods within the dynamic
         /// type.</param>
-        public ClassProperty(PropertyDefinition property, TypeBuilder typeBuilder)
+        public ModelProperty(PropertyDefinition property, TypeBuilder typeBuilder)
         {
             FieldBuilder = typeBuilder.DefineField($"_{property.Name}", property.ClrType, FieldAttributes.Private);
 

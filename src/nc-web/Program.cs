@@ -8,7 +8,7 @@ namespace nc.Web
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
-                        .UseUrls("http://localhost:6669") // Listen on localhost:6669
+                        .UseUrls("http://localhost:5000") // Listen on localhost:6669
                         .ConfigureServices(services =>
                         {
                         })

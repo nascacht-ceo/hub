@@ -1,4 +1,9 @@
-﻿namespace nc.Reflection.Tests;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using System.Net;
+using System.Text.Json;
+
+namespace nc.Reflection.Tests;
 
 public class TypeServiceFacts
 {
@@ -46,18 +51,18 @@ public class TypeServiceFacts
         public void SegregatesBySolution()
         {
             var typeService = new TypeService();
-            var classDefinition1 = new ModelDefinition
+            var modelDefinition1 = new ModelDefinition
             {
                 ModelName = "ClassA",
                 Solution = "SolutionA"
             };
-            var classDefinition2 = new ModelDefinition
+            var modelDefinition2 = new ModelDefinition
             {
                 ModelName = "ClassA",
                 Solution = "SolutionB"
             };
-            var type1 = typeService.GetModel(classDefinition1);
-            var type2 = typeService.GetModel(classDefinition2);
+            var type1 = typeService.GetModel(modelDefinition1);
+            var type2 = typeService.GetModel(modelDefinition2);
             Assert.NotNull(type1);
             Assert.NotNull(type2);
             Assert.NotEqual(type1.Assembly, type2.Assembly);
@@ -76,7 +81,7 @@ public class TypeServiceFacts
         {
             var typeService = new TypeService();
             var interfaceType = typeof(ITestInterface<>).MakeGenericType(identityType);
-            var classDefinition = new ModelDefinition
+            var modelDefinition = new ModelDefinition
             {
                 ModelName = name,
                 Solution = "TestSolution",
@@ -94,7 +99,7 @@ public class TypeServiceFacts
                     interfaceType
                 }
             };
-            var type = typeService.GetModel(classDefinition);
+            var type = typeService.GetModel(modelDefinition);
             Assert.NotNull(type);
             Assert.Equal(name, type.Name);
             // Assert.IsAssignableFrom<ITestInterface<long>>(type);
@@ -106,10 +111,10 @@ public class TypeServiceFacts
         }
 
         [Fact]
-        public void IgnoresUnsupportedInterfaces()
+        public void ErrorsOnUnsupportedInterfaces()
         {
             var typeService = new TypeService();
-            var classDefinition = new ModelDefinition
+            var modelDefinition = new ModelDefinition
             {
                 ModelName = "IgnoresUnsupportedInterfacesClass",
                 Solution = "TestSolution",
@@ -121,7 +126,7 @@ public class TypeServiceFacts
 
             Assert.Throws<MissingMemberException>(() =>
             {
-                var type = typeService.GetModel(classDefinition);
+                var type = typeService.GetModel(modelDefinition);
             });
         }
 
@@ -129,7 +134,7 @@ public class TypeServiceFacts
         public void AddsInterfacesWithDefaultImplementation()
         {
             var typeService = new TypeService();
-            var classDefinition = new ModelDefinition
+            var modelDefinition = new ModelDefinition
             {
                 ModelName = "CalculatorClass",
                 Solution = "TestSolution",
@@ -138,7 +143,7 @@ public class TypeServiceFacts
                     typeof(Calculator)
                 }
             };
-            var type = typeService.GetModel(classDefinition);
+            var type = typeService.GetModel(modelDefinition);
             Assert.NotNull(type);
             Assert.Equal("CalculatorClass", type.Name);
             Assert.True(typeof(Calculator).IsAssignableFrom(type));
@@ -152,13 +157,13 @@ public class TypeServiceFacts
         public void DerivesFromBaseClass()
         {
             var typeService = new TypeService();
-            var classDefinition = new ModelDefinition
+            var modelDefinition = new ModelDefinition
             {
                 ModelName = "DerivedClass",
                 Solution = "TestSolution",
                 BaseClass = typeof(SampleBaseClass)
             };
-            var type = typeService.GetModel(classDefinition);
+            var type = typeService.GetModel(modelDefinition);
             Assert.NotNull(type);
             Assert.Equal("DerivedClass", type.Name);
             Assert.True(typeof(SampleBaseClass).IsAssignableFrom(type));
@@ -167,9 +172,88 @@ public class TypeServiceFacts
             instance.Description = "This is a derived class.";
             Assert.Equal("DerivedClass says: This is a derived class.", instance.Describe());
         }
-    }
 
-    public interface ITestInterface<T>
+		[Fact]
+		public void EncryptsProperties()
+		{
+            var credential = new NetworkCredential("foo", "bar", "nc.io");
+			var jsonString = JsonSerializer.Serialize(credential);
+
+			var typeService = new TypeService();
+			var modelDefinition = new ModelDefinition<NetworkCredential>();
+            var type = typeService.GetModel(modelDefinition);
+
+			Assert.Equal("NetworkCredential", modelDefinition.ModelName.Value);
+
+		}
+
+	}
+
+	public class  GetModuleDefinition: TypeServiceFacts
+	{
+		private readonly TypeService _typeService;
+
+		public GetModuleDefinition()
+        {
+			_typeService = new TypeService();
+            var modelDefinition = new ModelDefinition
+            {
+                ModelName = "GetModuleDefinition",
+                Solution = "TestSolution",
+                Properties = new List<PropertyDefinition>
+                {
+                    new PropertyDefinition
+                    {
+                        Name = "Id",
+                        ClrType = typeof(int),
+                        IsKey = true
+                    },
+                    new PropertyDefinition
+                    {
+                        Name = "Name",
+                        ClrType = typeof(string)
+                    }
+                }
+            };
+            _typeService.GetModel(modelDefinition);
+            _typeService.GetModel(new ModelDefinition(typeof(NetworkCredential)));
+            _typeService.GetModel(new ModelDefinition()
+            {
+                Solution = "TestSolution",
+                ModelName = "SampleDerviedClass",
+				BaseClass = typeof(SampleBaseClass),
+			});
+		}
+
+		[Fact]
+		public void FindsByFullName()
+		{
+			var modelDefinition = _typeService.GetModelDefinition("TestSolution.SampleDerviedClass");
+			Assert.NotNull(modelDefinition);
+		}
+
+		[Fact]
+        public void FindsByClass()
+        {
+            var modelDefinition = _typeService.GetModelDefinition(typeof(NetworkCredential));
+            Assert.NotNull(modelDefinition);
+		}
+
+		[Fact]
+		public void FindsByBaseClass()
+		{
+			var modelDefinition = _typeService.GetModelDefinition(typeof(SampleBaseClass));
+			Assert.NotNull(modelDefinition);
+		}
+
+		[Fact]
+		public void ReturnsNullIfNotFound()
+		{
+			var modelDefinition = _typeService.GetModelDefinition(typeof(IConfigurationSection));
+			Assert.Null(modelDefinition);
+		}
+	}
+	public interface ITestInterface<T>
     {
         T Id { get; set; }
     }

@@ -29,10 +29,11 @@ public static class OpenApiServiceExtensions
 
     private static IServiceCollection AddOpenApiService(this IServiceCollection services)
     {
-        // Add DistributedMemoryCache if not already registered
-        if (!services.Any(s => s.ServiceType == typeof(IHttpClientFactory)))
+		// Add IHttpClientFactory if not already registered
+		if (!services.Any(s => s.ServiceType == typeof(IHttpClientFactory)))
             services.AddHttpClient();
-        if (!services.Any(s => s.ServiceType == typeof(IDistributedCache)))
+		// Add IDistributedCache if not already registered
+		if (!services.Any(s => s.ServiceType == typeof(IDistributedCache)))
             services.AddDistributedMemoryCache();
         services.AddLocalization(options => options.ResourcesPath = "Resources");
         return services.AddSingleton<OpenApiService>();

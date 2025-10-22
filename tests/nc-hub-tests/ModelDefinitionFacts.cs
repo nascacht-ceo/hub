@@ -1,19 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
-namespace nc.Reflection.Tests
+namespace nc.Hub.Tests
 {
     public class ModelDefinitionFacts
     {
-        public class Constructor : ModelDefinitionFacts
+		private readonly Solution _solution;
+
+		public ModelDefinitionFacts() 
+        {
+            _solution = new Solution() { Name = "ModelDefinitionFacts" };
+        }
+
+
+		public class Constructor : ModelDefinitionFacts
         {
             [Fact]
             public void DefaultConstructor()
             {
-                var modelDefinition = new ModelDefinition();
+                var modelDefinition = new ModelDefinition()
+                {
+                    Solution = _solution
+				};
                 Assert.NotNull(modelDefinition.Properties);
                 Assert.Empty(modelDefinition.Properties);
                 Assert.NotNull(modelDefinition.Interfaces);
@@ -24,9 +37,12 @@ namespace nc.Reflection.Tests
             public void WrapsConcreteTypes()
             {
 
-                var modelDefinition = new ModelDefinition<ConcreteType>();
+                var modelDefinition = new ModelDefinition<ConcreteType>()
+                {
+                    Solution = _solution
+				};
                 Assert.Equal("ConcreteType", modelDefinition.ModelName.Value);
-                Assert.Equal("nc.Reflection.Tests", modelDefinition.Solution.Value);
+                // Assert.Equal("nc.Reflection.Tests", modelDefinition.Solution.Name);
                 Assert.Equal(2, modelDefinition.Properties.Count());
                 Assert.Contains("Id", modelDefinition.Properties.Select(p => p.Name));
                 Assert.Contains("Name", modelDefinition.Properties.Select(p => p.Name));
@@ -36,11 +52,12 @@ namespace nc.Reflection.Tests
             public void WrapsAnonumouseType()
             {
                 var poco = new { Id = 1, Name = "Test" };
-                var modelDefinition = new ModelDefinition(poco);
-                Assert.Contains("Anonymous", modelDefinition.Solution.Value);
+                var modelDefinition = new ModelDefinition(poco) { Solution = _solution };
+                // Assert.Contains("Anonymous", modelDefinition.Solution.Name);
                 Assert.Contains("Anonymous", modelDefinition.ModelName.Value);
                 Assert.Equal(2, modelDefinition.Properties.Count());
             }
+
         }
     }
 

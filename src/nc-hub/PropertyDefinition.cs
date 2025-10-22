@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace nc.Reflection;
+namespace nc.Hub;
 
 /// <summary>
 /// Defines a property of a class, representing a column in a database table or a field in an OpenApi schema.

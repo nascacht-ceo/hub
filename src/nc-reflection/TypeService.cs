@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using nc.Hub;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -36,8 +37,8 @@ public class TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, 
 			throw new ArgumentNullException(nameof(solution), "Solution cannot be null or empty.");
 		return _moduleBuilders.GetOrAdd(solution, ns =>
 		{
-			using var activity = Tracing.Source.StartActivity("TypeService.GetModuleBuilder", System.Diagnostics.ActivityKind.Internal);
-			activity?.SetTag("solution", solution.Value);
+			//using var activity = Tracing.Source.StartActivity("TypeService.GetModuleBuilder", System.Diagnostics.ActivityKind.Internal);
+			//activity?.SetTag("solution", solution.Value);
 			logger?.LogTrace("Creating module builder for solution: {solution}", solution);
 
 			var assemblyName = new AssemblyName(ns);
@@ -61,11 +62,11 @@ public class TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, 
 
 		modelDefinition.Validate();
 
-		using var activity = Tracing.Source.StartActivity("TypeService.BuildType", System.Diagnostics.ActivityKind.Internal);
-		activity?.SetTag("Solution", modelDefinition.Solution);
-		activity?.SetTag("ModelName", modelDefinition.ModelName);
+		//using var activity = Tracing.Source.StartActivity("TypeService.BuildType", System.Diagnostics.ActivityKind.Internal);
+		//activity?.SetTag("Solution", modelDefinition.Solution);
+		//activity?.SetTag("ModelName", modelDefinition.ModelName);
 
-		var moduleBuilder = GetModuleBuilder(modelDefinition.Solution);
+		var moduleBuilder = GetModuleBuilder(modelDefinition.Solution.Name);
 
 		var modelBuilder = new ModelBuilder(moduleBuilder, modelDefinition);
 		foreach (var extension in _extensions)
@@ -81,60 +82,6 @@ public class TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, 
 			}
 		}
 		return modelBuilder.CreateTypeInfo();
-		//var tb = moduleBuilder.DefineType($"{classDefinition.Solution}.{classDefinition.ClassName}", TypeAttributes.Public | TypeAttributes.Class, classDefinition.BaseClass);
-		//var propertyMap = new Dictionary<string, (PropertyBuilder property, FieldBuilder field, MethodBuilder getter, MethodBuilder setter)>();
-
-		//// Add properties
-		//foreach (var property in classDefinition.Properties.Where(p => p.DeclaringType == null))
-		//{
-		//    var field = tb.DefineField($"_{property.Name}", property.ClrType, FieldAttributes.Private);
-
-		//    var propertyBuilder = tb.DefineProperty(property.Name, PropertyAttributes.HasDefault, property.ClrType, null);
-
-		//    // Define the getter for the property
-		//    var getter = tb.DefineMethod($"get_{property.Name}",
-		//        MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
-		//        property.ClrType, Type.EmptyTypes);
-		//    var getIL = getter.GetILGenerator();
-		//    getIL.Emit(OpCodes.Ldarg_0);
-		//    getIL.Emit(OpCodes.Ldfld, field);
-		//    getIL.Emit(OpCodes.Ret);
-
-		//    // Define the setter for the property
-		//    var setter = tb.DefineMethod($"set_{property.Name}",
-		//        MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
-		//        null, new[] { property.ClrType });
-		//    var setIL = setter.GetILGenerator();
-		//    setIL.Emit(OpCodes.Ldarg_0);
-		//    setIL.Emit(OpCodes.Ldarg_1);
-		//    setIL.Emit(OpCodes.Stfld, field);
-		//    setIL.Emit(OpCodes.Ret);
-
-		//    propertyBuilder.SetGetMethod(getter);
-		//    propertyBuilder.SetSetMethod(setter);
-
-		//    propertyMap[property.Name] = (propertyBuilder, field, getter, setter);
-		//}
-
-		//// Add interfaces
-		//foreach (var interfaceType in classDefinition.Interfaces)
-		//{
-		//    tb.AddInterfaceImplementation(interfaceType);
-
-		//    foreach (var interfaceProp in interfaceType.GetProperties())
-		//    {
-		//        if (!propertyMap.TryGetValue(interfaceProp.Name, out var memberInfo))
-		//            throw new InvalidOperationException($"Property '{interfaceProp.Name}' required by interface '{interfaceType.FullName}' is not defined in ClassDefinition.");
-
-		//        if (interfaceProp.GetGetMethod() is MethodInfo interfaceGetter)
-		//            tb.DefineMethodOverride(memberInfo.getter, interfaceGetter);
-
-		//        if (interfaceProp.GetSetMethod() is MethodInfo interfaceSetter)
-		//            tb.DefineMethodOverride(memberInfo.setter, interfaceSetter);
-		//    }
-		//}
-
-		//return tb.CreateTypeInfo()!;
 	}
 
 	/// <summary>
@@ -146,9 +93,9 @@ public class TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, 
 	{
 		if (modelDefinition is null)
 			throw new ArgumentNullException(nameof(modelDefinition), "Model definition cannot be null.");
-		_solutions
-			.GetOrAdd(modelDefinition.Solution, _ => new ConcurrentDictionary<SafeString, ModelDefinition>())
-			.GetOrAdd(modelDefinition.ModelName, modelDefinition);
+		//_solutions
+		//	.GetOrAdd(modelDefinition.Solution, _ => new ConcurrentDictionary<SafeString, ModelDefinition>())
+		//	.GetOrAdd(modelDefinition.ModelName, modelDefinition);
 		return _types.GetOrAdd(modelDefinition.FullName, _ => BuildType(modelDefinition));
 	}
 
@@ -163,20 +110,52 @@ public class TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, 
 		return type;
 	}
 
+	public ModelDefinition? GetModelDefinition(SafeString modelFullName)
+	{
+		foreach (var solution in _solutions)
+		{
+			if (modelFullName.Value.StartsWith(solution.Key.Value + "."))
+			{
+				var modelName = modelFullName.Value.Substring(solution.Key.Value.Length + 1);
+				if (solution.Value.TryGetValue(modelName, out var modelDefinition))
+					return modelDefinition;
+			}
+		}
+		return null;
+	}
+
 	public ModelDefinition? GetModelDefinition(Type type)
 	{
 		var parts = type.FullName?.Split('.').ToList();
 		if (parts == null)
 			return null;
-		var solution = parts?.Count > 1 ? parts[0] : null;
+		var solutionName = parts?.Count > 1 ? parts[0] : null;
 		
 		var modelName = parts?.Count > 1 ? string.Join(".", parts.Skip(1)) : type.FullName;
-		if (solution is null || modelName is null)
+		if (solutionName is null || modelName is null)
 			return null;
-		if (_solutions.TryGetValue(solution, out var models))
+		if (_solutions.TryGetValue(solutionName, out var models))
 		{
 			if (models.TryGetValue(modelName, out var modelDefinition))
 				return modelDefinition;
+		}
+		foreach (var modelType in _types)
+		{
+			if (modelType.Value.IsAssignableFrom(type))
+			{
+				return GetModelDefinition(modelType.Key);
+			}
+		}
+		foreach (var solution in _solutions.Values)
+		{
+			foreach (var model in solution.Values)
+			{
+				var baseType = model.BaseClass;
+				if (baseType != null && baseType.IsAssignableFrom(type))
+				{
+					return model;
+				}
+			}
 		}
 		return null;
 	}
@@ -187,72 +166,5 @@ public class TypeService(IEnumerable<ITypeBuilderExtension>? extensions = null, 
 			return models.Values;
 		return [];
 	}
-
-	//public void AddDatabase(string connectionString, string tablePattern)
-	//{
-	//    using var conn = new SqlConnection(connectionString);
-	//    conn.Open();
-
-	//    var cmd = conn.CreateCommand();
-	//    cmd.CommandText = @"
-	//        SELECT TABLE_NAME 
-	//        FROM INFORMATION_SCHEMA.TABLES 
-	//        WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE @pattern";
-	//    cmd.Parameters.AddWithValue("@pattern", tablePattern);
-
-	//    using var reader = cmd.ExecuteReader();
-	//    var tableNames = new List<string>();
-
-	//    while (reader.Read())
-	//        tableNames.Add(reader.GetString(0));
-
-	//    foreach (var tableName in tableNames)
-	//    {
-	//        if (_types.ContainsKey(tableName))
-	//            continue;
-
-	//        var columns = GetColumnsForTable(conn, tableName);
-	//        var type = BuildType(tableName, columns);
-	//        lock (_lock)
-	//        {
-	//            _types[tableName] = type;
-	//        }
-	//    }
-	//}
-
-	//private List<(string Name, Type ClrType)> GetColumnsForTable(SqlConnection conn, string tableName)
-	//{
-	//    var cmd = conn.CreateCommand();
-	//    cmd.CommandText = @"
-	//        SELECT COLUMN_NAME, DATA_TYPE
-	//        FROM INFORMATION_SCHEMA.COLUMNS 
-	//        WHERE TABLE_NAME = @table";
-	//    cmd.Parameters.AddWithValue("@table", tableName);
-
-	//    var columns = new List<(string, Type)>();
-	//    using var reader = cmd.ExecuteReader();
-	//    while (reader.Read())
-	//    {
-	//        var columnName = reader.GetString(0);
-	//        var sqlType = reader.GetString(1);
-	//        var clrType = SqlTypeToClrType(sqlType);
-	//        columns.Add((columnName, clrType));
-	//    }
-
-	//    return columns;
-	//}
-
-	//private Type SqlTypeToClrType(string sqlType) => sqlType switch
-	//{
-	//    "int" => typeof(int),
-	//    "bigint" => typeof(long),
-	//    "nvarchar" => typeof(string),
-	//    "varchar" => typeof(string),
-	//    "datetime" => typeof(DateTime),
-	//    "bit" => typeof(bool),
-	//    "decimal" => typeof(decimal),
-	//    "float" => typeof(double),
-	//    _ => typeof(string), // fallback
-	//};
 
 }
