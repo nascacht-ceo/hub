@@ -334,3 +334,4 @@ ASALocalRun/
 **/src/**/*.js
 **/src/**/*.d.ts
 /src/qbo4.Data.Web/package-lock.json
+/samples/aws-lambda/aws-lambda.lambda.zip
