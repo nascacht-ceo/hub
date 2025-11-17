@@ -1,4 +1,4 @@
-﻿namespace nc_extensions_tests
+﻿namespace nc.Extensions.Tests
 {
     public class IsWildCardMatch
     {

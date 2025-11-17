@@ -45,6 +45,7 @@ public class LambdaServiceTests
 			MethodHandler = $"{typeof(Sample.Aws.Lambda.Sample).FullName}::TransformAsync",
 			MemorySizeMb = 128,
 			TimeoutSeconds = 30,
+			ImageUri = "public.ecr.aws/lambda/dotnet:9-x86_64",
 			GetCodeStream = () => Task.FromResult<Stream>(
 				File.OpenRead("../../../../../samples/aws-lambda/aws-lambda.lambda.zip")
 			)

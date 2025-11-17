@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Reflection.Metadata.Ecma335;
 
 namespace nc.Scaling.Tests
 {
@@ -60,6 +61,18 @@ namespace nc.Scaling.Tests
 				.ExecuteAsync<int>()
 				.ToListAsync();
 			Assert.Equal(new[] { 1, 2, 2, 3, 4, 4, 5, 6, 8, 10 }, results.OrderBy(x => x));
+		}
+
+		[Fact]
+		public async Task Filter()
+		{
+			var inputs = Enumerable.Range(1, 5).ToAsyncEnumerable();
+			var results = await new TplPipeline(logger: _logger)
+				.From(inputs)
+				.Filter<int>(i => (i % 2 == 0))
+				.ExecuteAsync<int>()
+				.ToListAsync();
+			Assert.Equal(new[] { 2, 4 }, results.OrderBy(x => x));
 		}
 
 		[Fact]

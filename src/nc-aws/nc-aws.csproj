@@ -2,27 +2,37 @@
 
   <PropertyGroup>
     <RootNamespace>nc.Aws</RootNamespace>
+    <PackageId>nc-aws</PackageId>
+    <Version>1.0.0-alpha-1</Version>
+    <Authors>Nascacht</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/nascacht-ceo/hub</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Amazon.CDK" Version="1.204.0" />
     <PackageReference Include="Amazon.CDK.AWS.IAM" Version="1.204.0" />
     <PackageReference Include="Amazon.CDK.AWS.Lambda" Version="1.204.0" />
-    <PackageReference Include="Amazon.Lambda.Core" Version="2.7.1" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.8.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.7" />
-    <PackageReference Include="AWSSDK.Lambda" Version="4.0.3.1" />
-    <PackageReference Include="AWSSDK.S3" Version="4.0.7.12" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
-    <PackageReference Include="NuGet.Versioning" Version="6.14.0" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.9.6" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.12" />
+    <PackageReference Include="AWSSDK.Lambda" Version="4.0.6.3" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.11.3" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.2.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="NuGet.Versioning" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\nc-cloud\nc-cloud.csproj" />
     <ProjectReference Include="..\nc-extensions\nc-extensions.csproj" />
+    <ProjectReference Include="..\nc-models\nc-models.csproj" />
     <ProjectReference Include="..\nc-source-generators\nc-source-generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
   </ItemGroup>

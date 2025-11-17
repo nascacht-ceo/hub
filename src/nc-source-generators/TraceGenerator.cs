@@ -1,9 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
-using System.Linq;
 
 namespace nc.SourceGenerators;
 
-// Specify supported languages to avoid RS1041 when targeting .NET 9.0
+/// <summary>
+/// Generates a source file containing a static class with a <see cref="System.Diagnostics.ActivitySource"/>  for
+/// tracing, using the assembly name of the compilation as the source name.
+/// </summary>
+/// <remarks>This generator creates a static class named <c>Tracing</c> in the <c>nc</c> namespace.  The class
+/// contains a single static readonly field, <c>Source</c>, which is an instance of  <see
+/// cref="System.Diagnostics.ActivitySource"/> initialized with the assembly name of the compilation.  The generated
+/// source file is named <c>Tracing.g.cs</c>.</remarks>
 [Generator]
 public class TraceGenerator : IIncrementalGenerator
 {

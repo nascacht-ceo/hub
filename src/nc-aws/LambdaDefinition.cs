@@ -36,6 +36,11 @@ public class LambdaDefinition
 	public string? LambdaArn { get; set; }
 
 	/// <summary>
+	/// Elastic Container Registry (ECR) image URI for Lambda function deployment.
+	/// </summary>
+	public string? ImageUri { get; set; }
+
+	/// <summary>
 	/// Gets or sets a delegate that asynchronously provides a <see cref="Stream"/> containing code data.
 	/// </summary>
 	/// <remarks>Used by <see cref="LambdaService"/> to upload zip file contents to S3 for use by a Lamdba function.</remarks>

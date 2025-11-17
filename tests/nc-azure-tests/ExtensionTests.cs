@@ -18,7 +18,7 @@ public class ExtensionTests
         public void AddsAzureServiceOptionsFromConfig()
         {
             var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
-            var services = new ServiceCollection().AddAzure(config.GetSection("Azure")).BuildServiceProvider();
+            var services = new ServiceCollection().AddNascachtAzureServices(config.GetSection("Azure")).BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AzureServiceOptions>>();
             Assert.NotNull(options);
         }
@@ -27,7 +27,7 @@ public class ExtensionTests
         public void AddsConfigureManagerOptions()
         {
             var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
-            var services = new ServiceCollection().AddAzure(config.GetSection("Azure")).BuildServiceProvider();
+            var services = new ServiceCollection().AddNascachtAzureServices(config.GetSection("Azure")).BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<CloudFileManagerOptions>>();
             Assert.NotNull(options);
             Assert.NotEmpty(options.Value.ServiceFactories);

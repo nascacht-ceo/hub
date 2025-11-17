@@ -35,7 +35,7 @@ namespace nc.Azure.Tests
             config.Bind(options);
 
             var services = new ServiceCollection()
-                .AddAzure(config.GetSection("Azure"))
+                .AddNascachtAzureServices(config.GetSection("Azure"))
                 .BuildServiceProvider();
 
             //services.AddKeyedSingleton<ICloudFileService>("one", (sp, key) => new CloudFileService(_blobService));

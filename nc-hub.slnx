@@ -6,18 +6,23 @@
     <File Path=".gitignore" />
     <File Path="coding.md" />
     <File Path="Directory.Build.props" />
+    <File Path="nuget.config" />
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="nc-mediatr-extensions/nc-mediatr-extensions.csproj" />
     <Project Path="src/nc-ai/nc-ai.csproj" />
+    <Project Path="src/nc-api/nc-api.csproj" Id="4ddcfeeb-fe41-4e3d-b1a7-c83909f90f94" />
     <Project Path="src/nc-aws/nc-aws.csproj" />
     <Project Path="src/nc-azure/nc-azure.csproj" />
     <Project Path="src/nc-cloud/nc-cloud.csproj" />
     <Project Path="src/nc-data/nc-data.csproj" />
+    <Project Path="src/nc-extensions-logging/nc-extensions-logging.csproj" Id="42da11aa-b43d-4673-b3fb-c337b6c97c33" />
     <Project Path="src/nc-extensions/nc-extensions.csproj" />
     <Project Path="src/nc-gcp/nc-gcp.csproj" />
     <Project Path="src/nc-hub/nc-hub.csproj" />
+    <Project Path="src/nc-license/nc-license.csproj" Id="34507f70-91f9-4e46-82dc-26537fc4e31a" />
+    <Project Path="src/nc-models/nc-models.csproj" Id="c2a2de17-5ecf-45a1-9871-8297cc27fd28" />
     <Project Path="src/nc-openapi/nc-openapi.csproj" />
     <Project Path="src/nc-reflection/nc-reflection.csproj" />
     <Project Path="src/nc-scaling/nc-scaling.csproj" Id="0d36adc4-5d60-430d-be84-3bcf8ae77114" />
@@ -27,17 +32,19 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="test/nc-aws-tests/nc-aws-tests.csproj" Id="28941a1e-e6b8-4eb8-b5c2-fb8300efe74d" />
+    <Project Path="tests/nc-ai-tests/nc-ai-tests.csproj" Id="e726980c-9649-40f4-b65c-621d1ade3b5e" />
     <Project Path="tests/nc-azure-functions/sample/sample.csproj" />
     <Project Path="tests/nc-azure-tests/nc-azure-tests.csproj" />
     <Project Path="tests/nc-cloud-tests/nc-cloud-tests.csproj" />
     <Project Path="tests/nc-data-tests/nc-data-tests.csproj" />
     <Project Path="tests/nc-extensions-tests/nc-extensions-tests.csproj" />
+    <Project Path="tests/nc-extenstions-logging-tests/nc-extenstions-logging-tests.csproj" Id="9aad78c1-ef7b-45ad-a9db-0743563de20c" />
     <Project Path="tests/nc-graphql-sample/nc-graphql-sample.csproj" />
     <Project Path="tests/nc-hub-tests/nc-hub-tests.csproj" />
+    <Project Path="tests/nc-models-tests/nc-models-tests.csproj" Id="0a69d984-1141-4966-aef0-a8d8e9dc4861" />
     <Project Path="tests/nc-openapi-tests/nc-openapi-tests.csproj" />
     <Project Path="tests/nc-reflection-tests/nc-reflection-tests.csproj" />
     <Project Path="tests/nc-scaling-tests/nc-scaling-tests.csproj" Id="0c231a13-d540-45ec-a780-54e88beca9ab" />
-    <Project Path="tests/nc-spark-tests/nc-spark-tests.csproj" />
     <Project Path="tests/nc-web-tests/nc-web-tests.csproj" />
   </Folder>
 </Solution>

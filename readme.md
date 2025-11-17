@@ -7,7 +7,51 @@ The target audience for this suite include:
 - developers that need to refactor existing systems
 - business analysts that need to implement domain-specific solutions from existing systems
 
-# Use Cases
+# Cloud
+
+The `nc-cloud` project provides abstractions across Amazon Web Services, Microsoft Azure, and Google Cloud Platform.
+
+|Term|Description|
+|-|-|
+|ITenantManager|Add or remove cloud tenants to be accessed.|
+|ITenantAccessor|Set or get the default tenant to use by ITenantManager.|
+
+## ITenantManager
+
+```csharp
+var config = new ConfigurationBuilder()
+  .AddJsonFile("appsettings.json")
+  .Build();
+var services = new ServiceCollection()
+  .AddNascachtServices(config.GetSection("nc"))
+  .BuildServiceProvider();
+
+var manager = services.GetRequiredService<AmazonTenantManager>();
+
+// Access S3 using default credentials (e.g. implicit EC2)
+var s3 = manager.GetServiceAsync<IAmazonS3>();
+
+// Add a new tenant
+await manager.AddTenantAsync(new AmazonTenant
+{
+	Name = "SomeTenant",
+	AccessKey = "abc",
+	SecretKey = "123"
+});
+
+// Access S3 using SomeTenant
+var someS3 = manager.GetServiceAsync<IAmazonS3>("SomeTenant");
+
+// Set SomeTenant as default for a scope
+var tenantAccessor = services.GetRequiredService<ITenantAccessor>();
+using (var tenantScope = tenantAccessor.SetTenant("SomeTenant")
+{
+  // This will use SomeTenant
+  var s3 = manager.GetServiceAsync<IAmazonS3>();
+}
+```
+
+# Solutions
 
 ```csharp
 var solutions = new SolutionsBuilder()
@@ -15,6 +59,50 @@ var solutions = new SolutionsBuilder()
 	.AddAssembly("MyClass", typeof(MyClass).Assembly)
 	.AddType("OtherClass", typeof(OtherClass))
 	.AddOpenApi("SampleApi", "https://example.com/openapi.json");
+```
+
+# File Storage
+
+```csharp
+var manager = services.GetRequiredService<IStorageManager>();
+manager.AddDisk("bucketA", "s3://aws-bucket-name");
+manager.AddDisk("blobB", "az://azure-blob-name");
+manager.AddDisk("bucketB", "gs://gcp-bucket-name");
+
+var source = manager.GetDisk("bucketA");
+var destination = manager.GetDisk("blobB");
+
+var pipeline = new TplPipeline()
+  .From(source.SearchAsync("some/prefix/"))
+  .Transform<IStorageFileInfo, IStorageFileInfo>(async file =>
+  {
+	using var stream = await file.ReadAsync();
+	return destination.WriteAsync($"/inbound/{file.RelativePath}, stream);
+  })
+  .Filter<IStorageFileInfo>(file => file.RelativePath.EndsWith(".pdf"))
+  .TransformMany<IStorageFileInfo, IStorageFileInfo>(async file =>
+  {
+	
+  })
+var source = manager.GetDisk("bucketA");
+var files = await source.SearchAsync("some/prefix/");
+var destination = manager.GetDisk("blobB");
+destination.PostAsync(files);
+```
+
+# Configuration
+
+All configuration should exist under a root 'nc' section.
+```json
+{
+  "nc": {
+	"ai": {...},
+	"aws": {...},
+	"azure": {...},
+	"gcp": {...},
+	"solutions": {...}
+  }
+}
 ```
 
 ## Data Wrappers
@@ -25,9 +113,6 @@ var solutions = new SolutionsBuilder()
 - Raise notifications when data changes, consumable by other systems.
 
 ## Open API Wrappers
-
-
- 
 
 |Use Case|Description|
 |-|-|

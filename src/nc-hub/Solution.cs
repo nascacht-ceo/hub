@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Reflection.Metadata.Ecma335;
 
 namespace nc.Hub;
 
@@ -30,7 +28,7 @@ public partial class Solution: ISolution
 	/// </summary>
 	/// <remarks>Use this property to manage and access the endpoints associated with their unique identifiers.
 	/// Modifications to the dictionary will directly affect the stored endpoints.</remarks>
-	private IDictionary<SafeString, IEndpoint> Endpoints { get; set; } = new ConcurrentDictionary<SafeString, IEndpoint>();
+	public IDictionary<SafeString, IEndpoint> Endpoints { get; set; } = new ConcurrentDictionary<SafeString, IEndpoint>();
 
 	public T GetEndpoint<T>(SafeString name) where T : IEndpoint
 	{
@@ -151,16 +149,19 @@ public partial class Solution: ISolution
 		//activity?.SetTag("ModelName", modelDefinition.ModelName);
 
 		var modelBuilder = new ModelBuilder(_moduleBuilder.Value, modelDefinition);
-		foreach (var extension in _extensions)
+		if (_extensions is not null)
 		{
-			try
+			foreach (var extension in _extensions)
 			{
-				extension.Apply(modelBuilder);
-			}
-			catch (Exception ex)
-			{
-				_logger?.LogError(ex, "Error building model with extension {ExtensionName}", extension.GetType().Name);
-				throw;
+				try
+				{
+					extension.Apply(modelBuilder);
+				}
+				catch (Exception ex)
+				{
+					_logger?.LogError(ex, "Error building model with extension {ExtensionName}", extension.GetType().Name);
+					throw;
+				}
 			}
 		}
 		return modelBuilder.CreateTypeInfo();

@@ -79,7 +79,26 @@ public class TplPipeline: IPipeline<TplPipeline>
 		_blocks.Add(new(transformMany, typeof(TInput), typeof(TOutput)));
 		return this;
 	}
-	
+
+	public TplPipeline Filter<TInput>(Func<TInput, bool> operation, IScalingOptions<TplPipeline>? options = null)
+	{
+		var sourceBlock = _blocks.Where(block => block.ReturnType == typeof(TInput)).LastOrDefault()?.Block as ISourceBlock<TInput>;
+		if (sourceBlock == null)
+			throw new ArgumentOutOfRangeException(nameof(TInput), "The input type does not match the previous block's output type.");
+
+		var transformMany = new TransformManyBlock<TInput, TInput>(i => Filter(i, operation), options as TplScalingOptions ?? _options);
+		sourceBlock.LinkTo(transformMany, new DataflowLinkOptions { PropagateCompletion = true });
+		_blocks.Add(new(transformMany, typeof(TInput), typeof(TInput)));
+		return this;
+	}
+
+	private async IAsyncEnumerable<TInput> Filter<TInput>(TInput input, Func<TInput, bool> operation)
+	{
+		if (operation(input))
+			yield return input;
+		await Task.CompletedTask;
+	}
+
 	/// <summary>
 	/// <inheritdoc/>
 	/// </summary>

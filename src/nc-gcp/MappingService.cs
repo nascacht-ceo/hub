@@ -129,7 +129,7 @@ public class MappingService : IMappingService
 	/// <summary>
 	/// Converts a collection of Geodetic Locations (NTS Points) to Addresses (Batch Reverse Geocoding).
 	/// </summary>
-	public async IAsyncEnumerable<MapLocation> ReverseGeocodeLocationsAsync(IEnumerable<NetTopologySuite.Geometries.Point> locations)
+	public IAsyncEnumerable<MapLocation> ReverseGeocodeLocationsAsync(IEnumerable<NetTopologySuite.Geometries.Point> locations)
 	{
 		throw new NotImplementedException();
 		// No single official V1 Reverse Geocoding batch API exists; fan-out is required.
@@ -154,7 +154,7 @@ public class MappingService : IMappingService
 	/// <summary>
 	/// Validates and standardizes a collection of addresses using the Address Validation V1 API.
 	/// </summary>
-	public async IAsyncEnumerable<MapAddress> ValidateAddressesAsync(IEnumerable<string> unstructuredAddresses)
+	public IAsyncEnumerable<MapAddress> ValidateAddressesAsync(IEnumerable<string> unstructuredAddresses)
 	{
 		throw new NotImplementedException();
 		//var validationTasks = unstructuredAddresses.Select(address => Task.Run(async () =>
@@ -180,7 +180,7 @@ public class MappingService : IMappingService
 	/// <summary>
 	/// Searches for nearby points of interest (POI) using the Places V1 API.
 	/// </summary>
-	public async IAsyncEnumerable<MapLocation> SearchLocationAsync(string query, NetTopologySuite.Geometries.Point center, int? radiusInMeters = null)
+	public IAsyncEnumerable<MapLocation> SearchLocationAsync(string query, NetTopologySuite.Geometries.Point center, int? radiusInMeters = null)
 	{
 		throw new NotImplementedException();
 		//var request = new SearchNearbyRequest
@@ -202,7 +202,7 @@ public class MappingService : IMappingService
 	/// <summary>
 	/// Calculates a collection of optimal routes using the Routes V1 API in a batch fan-out.
 	/// </summary>
-	public async IAsyncEnumerable<MapRoute> CalculateRoutesAsync(IEnumerable<MapRouteRequest> requests)
+	public IAsyncEnumerable<MapRoute> CalculateRoutesAsync(IEnumerable<MapRouteRequest> requests)
 	{
 		throw new NotImplementedException();
 		//var routeTasks = requests.Select(request => Task.Run(async () =>
@@ -231,7 +231,7 @@ public class MappingService : IMappingService
 	/// <summary>
 	/// Calculates a matrix of travel times and distances using the Routes V1 Batch API (ComputeRouteMatrix).
 	/// </summary>
-	public async IAsyncEnumerable<IEnumerable<MapRoute>> CalculateRouteMatrixAsync(IEnumerable<NetTopologySuite.Geometries.Point> origins, IEnumerable<NetTopologySuite.Geometries.Point> destinations)
+	public IAsyncEnumerable<IEnumerable<MapRoute>> CalculateRouteMatrixAsync(IEnumerable<NetTopologySuite.Geometries.Point> origins, IEnumerable<NetTopologySuite.Geometries.Point> destinations)
 	{
 		throw new NotImplementedException();
 		//// This maps to the ComputeRouteMatrix API in Routes V1.

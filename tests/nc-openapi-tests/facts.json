@@ -1,6 +1,6 @@
 {
   "nc": {
-    "OpenApi": {
+    "openapi": {
       "Specifications": {
         "local-config": {
           "SpecUrl": "https://localhost/core/swagger/configuration/swagger.json"

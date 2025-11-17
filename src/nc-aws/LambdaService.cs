@@ -96,14 +96,17 @@ public class LambdaService: nc.Cloud.IFunctionService<LambdaService>
 			Runtime = definition.Runtime,
 			Role = definition.RoleArn,
 			Handler = definition.MethodHandler,
+			PackageType = PackageType.Image,
 			Code = new FunctionCode
 			{
 				S3Bucket = definition.S3Bucket,
-				S3Key = definition.S3Key
+				S3Key = definition.S3Key,
+				ImageUri = definition.ImageUri
 			},
 			MemorySize = definition.MemorySizeMb,
 			Timeout = definition.TimeoutSeconds,
 			Description = $"Version {definition.Version}",
+			
 		};
 
 		var response = await _lambdaClient.CreateFunctionAsync(createRequest, cancellationToken);
@@ -153,7 +156,8 @@ public class LambdaService: nc.Cloud.IFunctionService<LambdaService>
 			FunctionName = definition.Name,
 			S3Bucket = definition.S3Bucket,
 			S3Key = definition.S3Key,
-			Publish = true
+			Publish = true,
+			ImageUri = definition.ImageUri
 		};
 		var updateFunctionResponse = await _lambdaClient.UpdateFunctionCodeAsync(updateCodeRequest, cancellationToken);
 		definition.LambdaArn = updateFunctionResponse.FunctionArn;

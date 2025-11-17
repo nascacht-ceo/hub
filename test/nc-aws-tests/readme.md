@@ -1,1 +1,1 @@
-﻿ docker run -d --rm -it -p 4566:4566 -p 4571:4571 -e SERVICES=lambda,s3 -e LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT=120 -e DEBUG=1 -v /var/run/docker.sock:/var/run/docker.sock localstack/localstack
+﻿docker run -d --rm -it -p 4566:4566 -p 4571:4571 -e SERVICES=lambda,s3,secretsmanager,dynamodb -e LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT=120 -e DEBUG=1 -v /var/run/docker.sock:/var/run/docker.sock localstack/localstack

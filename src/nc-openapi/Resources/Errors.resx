@@ -120,6 +120,9 @@
   <data name="OpenApiParseError" xml:space="preserve">
     <value>Unable to parse OpenAPI json from {0}</value>
   </data>
+  <data name="OpenApiServiceNotRegistered" xml:space="preserve">
+    <value>OpenApiService has not been registered. Did you forget to call services.AddNascachtOpenApi()?</value>
+  </data>
   <data name="OpenApiSpecNotRegistered" xml:space="preserve">
     <value>No OpenApi specification with this name has been registered.
 Valid values are: {0}</value>

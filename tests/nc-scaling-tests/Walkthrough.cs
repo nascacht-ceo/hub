@@ -16,11 +16,11 @@ public class Walkthrough
 
 	public class SomePoco
 	{
-		public string Name { get; set; }
+		public required string Name { get; set; }
 	}
 
 	public class OtherPoco
 	{
-		public string Name { get; set; }
+		public required string Name { get; set; }
 	}
 }

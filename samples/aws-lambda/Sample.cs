@@ -16,6 +16,18 @@ public class OtherPoco
 
 public class Sample
 {
+	// Lambda handler for transformation
+	public async Task<OtherPoco> TransformHandler(SomePoco some, ILambdaContext context)
+	{
+		return await TransformAsync(some);
+	}
+
+	// Lambda handler for notification
+	public async Task<string> NotifyHandler(OtherPoco input, ILambdaContext context)
+	{
+		return await NotifyAsync(input);
+	}
+
 	public async Task<OtherPoco> TransformAsync(SomePoco some)
 	{
 		// The guts of your original logic snippet:
@@ -25,15 +37,9 @@ public class Sample
 		});
 	}
 
-	public async Task<string> NotifyAsync(OtherPoco input, ILambdaContext context)
+	public async Task<string> NotifyAsync(OtherPoco input)
 	{
-		context.Logger.LogLine($"Notification triggered for item: {input.Name}");
-
-		// Simulation of sending an email or message
 		string message = $"Successfully processed {input.Name}. Notification sent at {DateTime.Now}";
-
-		context.Logger.LogLine(message);
-
 		return await Task.FromResult(message);
 	}
 }

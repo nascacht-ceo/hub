@@ -1,7 +1,7 @@
-﻿[Collection("AzureTestFixture")]
+﻿[Collection(nameof(AzureFixture))]
 public class CloudFileManagerTests: AbstractCloudFileManagerTests
 {
-    public CloudFileManagerTests(AzureTestFixture fixture): base(fixture)
+    public CloudFileManagerTests(AzureFixture fixture): base(fixture)
     { }
 
 }

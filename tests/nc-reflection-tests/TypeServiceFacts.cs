@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using nc.Hub;
 using System.Net;
 using System.Text.Json;
 
@@ -25,7 +26,7 @@ public class TypeServiceFacts
             var modelDefinition = new ModelDefinition
             {
                 ModelName = "BuildsTypeClass",
-                Solution = "TestSolution",
+                // Solution = "TestSolution",
                 Properties = new List<PropertyDefinition>
                 {
                     new PropertyDefinition
@@ -54,12 +55,12 @@ public class TypeServiceFacts
             var modelDefinition1 = new ModelDefinition
             {
                 ModelName = "ClassA",
-                Solution = "SolutionA"
+                //Solution = "SolutionA"
             };
             var modelDefinition2 = new ModelDefinition
             {
                 ModelName = "ClassA",
-                Solution = "SolutionB"
+                //Solution = "SolutionB"
             };
             var type1 = typeService.GetModel(modelDefinition1);
             var type2 = typeService.GetModel(modelDefinition2);
@@ -84,7 +85,7 @@ public class TypeServiceFacts
             var modelDefinition = new ModelDefinition
             {
                 ModelName = name,
-                Solution = "TestSolution",
+                //Solution = "TestSolution",
                 Properties = new List<PropertyDefinition>
                 {
                     new PropertyDefinition
@@ -117,7 +118,7 @@ public class TypeServiceFacts
             var modelDefinition = new ModelDefinition
             {
                 ModelName = "IgnoresUnsupportedInterfacesClass",
-                Solution = "TestSolution",
+                // Solution = "TestSolution",
                 Interfaces = new HashSet<Type>
                 {
                     typeof(ITestInterface<string>)
@@ -137,7 +138,7 @@ public class TypeServiceFacts
             var modelDefinition = new ModelDefinition
             {
                 ModelName = "CalculatorClass",
-                Solution = "TestSolution",
+                // Solution = "TestSolution",
                 Interfaces = new HashSet<Type>
                 {
                     typeof(Calculator)
@@ -160,7 +161,7 @@ public class TypeServiceFacts
             var modelDefinition = new ModelDefinition
             {
                 ModelName = "DerivedClass",
-                Solution = "TestSolution",
+                // Solution = "TestSolution",
                 BaseClass = typeof(SampleBaseClass)
             };
             var type = typeService.GetModel(modelDefinition);
@@ -199,7 +200,7 @@ public class TypeServiceFacts
             var modelDefinition = new ModelDefinition
             {
                 ModelName = "GetModuleDefinition",
-                Solution = "TestSolution",
+                // Solution = "TestSolution",
                 Properties = new List<PropertyDefinition>
                 {
                     new PropertyDefinition
@@ -219,7 +220,7 @@ public class TypeServiceFacts
             _typeService.GetModel(new ModelDefinition(typeof(NetworkCredential)));
             _typeService.GetModel(new ModelDefinition()
             {
-                Solution = "TestSolution",
+                // Solution = "TestSolution",
                 ModelName = "SampleDerviedClass",
 				BaseClass = typeof(SampleBaseClass),
 			});

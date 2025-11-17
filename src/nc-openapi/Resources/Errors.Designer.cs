@@ -70,6 +70,15 @@ namespace nc.OpenApi.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OpenApiService has not been registered. Did you forget to call services.AddNascachtOpenApi()?.
+        /// </summary>
+        public static string OpenApiServiceNotRegistered {
+            get {
+                return ResourceManager.GetString("OpenApiServiceNotRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No OpenApi specification with this name has been registered.
         ///Valid values are: {0}.
         /// </summary>

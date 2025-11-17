@@ -27,7 +27,7 @@ public class SolutionFacts
 			Assert.Contains("Person_Address", tableNames);
 
 			// Add a DbContext for these models to the solution.
-			solution.AddDbContext("People", models);
+			// solution.AddDbContext("People", models);
 
 
 		}

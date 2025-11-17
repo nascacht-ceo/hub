@@ -173,7 +173,7 @@ ORDER BY c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION;
                 {
                     ModelName = modelName,
                     Properties = properties,
-                    Solution = new SafeString(solutionNamespace),
+                    // Solution = new SafeString(solutionNamespace),
                     Interfaces = new HashSet<Type>(), // Add default interfaces if needed
                     BaseClass = null,
                     SourceType = "DatabaseTable",

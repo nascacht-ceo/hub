@@ -25,7 +25,7 @@ public class OpenApiService
     private OpenApiServiceOptions _options;
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IStringLocalizer<OpenApiService> _localizer;
+    private readonly IStringLocalizer<Resources.Errors> _localizer;
     private readonly ILogger<OpenApiService>? _logger;
 
     /// <summary>
@@ -42,7 +42,7 @@ public class OpenApiService
     public OpenApiService(
         IOptionsMonitor<OpenApiServiceOptions> options,
         IHttpClientFactory httpClientFactory,
-        IStringLocalizer<OpenApiService> localizer,
+        IStringLocalizer<Resources.Errors> localizer,
         IDistributedCache? cache = null,
         ILogger<OpenApiService>? logger = null)
     {
@@ -118,7 +118,7 @@ public class OpenApiService
     {
         if (!_options.Specifications.ContainsKey(name))
             throw new ArgumentOutOfRangeException(nameof(name), name,
-                _localizer["OpenapiSpecNotRegistered", string.Join(", ", _options.Specifications.Keys)]);
+                _localizer[nameof(Resources.Errors.OpenApiSpecNotRegistered), string.Join(", ", _options.Specifications.Keys)]);
 
         var json = await _cache.GetStringAsync($"{_options.CacheKey}:{name}", cancellationToken);
         if (json != null)
@@ -138,7 +138,7 @@ public class OpenApiService
                 foreach (var error in diagnostic.Errors)
                     _logger?.LogWarning(error.Message);
 
-                throw new InvalidOperationException(_localizer["OpenapiSpecNotRegistered", specification.SpecUrl!]);
+                throw new InvalidOperationException(_localizer[nameof(Resources.Errors.OpenApiSpecNotRegistered), specification.SpecUrl!]);
             }
             await _cache.SetStringAsync(
                 $"{_options.CacheKey}:{name}", 
@@ -156,7 +156,7 @@ public class OpenApiService
     private string OpenApiDocumentToJson(OpenApiDocument document, OpenApiSpecVersion version = OpenApiSpecVersion.OpenApi3_0)
     {
         using var stream = new MemoryStream();
-        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        using var writer = new StreamWriter(stream, new UTF8Encoding(false));
         var openApiWriter = new OpenApiJsonWriter(writer);
 
         document.Serialize(openApiWriter, version);
