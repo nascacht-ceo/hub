@@ -50,8 +50,12 @@
     <Project Path="tests/nc-web-tests/nc-web-tests.csproj" />
   </Folder>
   <Folder Name="/tests/data/">
+    <File Path="tests/data/bookmark.pdf" />
     <File Path="tests/data/sample.477x640.jpg" />
+    <File Path="tests/data/sample.flac" />
     <File Path="tests/data/sample.jpeg" />
     <File Path="tests/data/sample.moving.gif" />
+    <File Path="tests/data/speech.mp3" />
+    <File Path="tests/data/speech.wav" />
   </Folder>
 </Solution>

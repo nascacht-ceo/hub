@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using nc.Extensions.Streaming;
+using SkiaSharp;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -32,6 +33,91 @@ public static class StreamExtensions
 		SHA3_256,
 		SHA3_384,
 		SHA3_512
+	}
+
+	/// <summary>
+	/// Specifies the result of comparing two fingerprints for similarity or duplication.
+	/// </summary>
+	/// <remarks>Use this enumeration to interpret the outcome of a fingerprint comparison operation. The values
+	/// indicate whether the fingerprints are identical, likely duplicates, similar, or different, typically based on the
+	/// computed Hamming distance between them.</remarks>
+	public enum FingerprintMatch
+	{
+		/// <summary>
+		/// Exact fingerprint match
+		/// </summary>
+		Exact,
+		/// <summary>
+		/// Highly likely a duplicate based on Low Hamming Distance
+		/// Hamm
+		/// </summary>
+		Duplicate,
+		/// <summary>
+		/// Possilbe similar content based on Medium Hamming Distance
+		/// </summary>
+		Similar,
+		/// <summary>
+		/// Different content based on High Hamming Distance
+		/// </summary>
+		Different
+	}
+
+	public class FingerprintComparison
+	{
+		/// <summary>
+		/// Represents the default value for the low threshold setting: 3 bits.
+		/// </summary>
+		public const int DefaultThresholdLow = 3;
+
+		/// <summary>
+		/// Represents the default value for the high threshold setting. 10 bits.
+		/// </summary>
+		public const int DefaultThresholdHigh = 10;
+
+		/// <summary>
+		/// Gets or sets the lower threshold value used for calculating a <see cref="FingerprintMatch"/>.
+		/// </summary>
+		public int ThresholdLow { get; set; } = DefaultThresholdLow;
+
+		/// <summary>
+		/// Gets or sets the high threshold value used for calculating a <see cref="FingerprintMatch"/>.
+		/// </summary>
+		public int ThresholdHigh { get; set; } = DefaultThresholdHigh;
+
+		/// <summary>
+		/// Compares two fingerprint hashes and determines the degree of similarity between them.
+		/// </summary>
+		/// <remarks>The comparison is based on the Hamming distance between the two hashes. The thresholds for
+		/// determining duplicate and similar matches are defined by the ThresholdLow and ThresholdHigh values. This method
+		/// does not modify the input values.</remarks>
+		/// <param name="hashA">The first fingerprint hash to compare.</param>
+		/// <param name="hashB">The second fingerprint hash to compare.</param>
+		/// <returns>A value indicating whether the fingerprints are exact matches, duplicates, similar, or different.</returns>
+		public FingerprintMatch Compare(ulong hashA, ulong hashB)
+		{
+			int distance = System.Numerics.BitOperations.PopCount(hashA ^ hashB);
+			if (distance == 0)
+				return FingerprintMatch.Exact;
+			else if (distance <= ThresholdLow)
+				return FingerprintMatch.Duplicate;
+			else if (distance <= ThresholdHigh)
+				return FingerprintMatch.Similar;
+			else
+				return FingerprintMatch.Different;
+		}
+
+		public static FingerprintMatch Compare(ulong hashA, ulong hashB, int thresholdLow = DefaultThresholdLow, int thresholdHigh = DefaultThresholdHigh)
+		{
+			int distance = System.Numerics.BitOperations.PopCount(hashA ^ hashB);
+			if (distance == 0)
+				return FingerprintMatch.Exact;
+			else if (distance <= thresholdLow)
+				return FingerprintMatch.Duplicate;
+			else if (distance <= thresholdHigh)
+				return FingerprintMatch.Similar;
+			else
+				return FingerprintMatch.Different;
+		}
 	}
 
 	/// <summary>
@@ -212,4 +298,46 @@ public static class StreamExtensions
 		}
 		return hashedValue;
 	}
+
+	private static int MaxHeaderSize = MagicByte.Defaults.Max(m => m.Data.Length);
+
+	/// <summary>
+	/// Determines the MIME type of the data contained in the specified stream by inspecting its header bytes.
+	/// </summary>
+	/// <remarks>The method does not modify the stream's position. If the stream is null, not readable, or not
+	/// seekable, the method returns "application/octet-stream". The detection is based on known file signatures (magic
+	/// bytes) and may not identify all file types.</remarks>
+	/// <param name="stream">The stream containing the data to analyze. The stream must be readable and seekable.</param>
+	/// <returns>A string representing the detected MIME type based on the stream's header. Returns "application/octet-stream" if
+	/// the MIME type cannot be determined or if the stream is not readable or seekable.</returns>
+	public static string GetMimeType(this Stream stream)
+	{
+		if (stream == null || !stream.CanRead || !stream.CanSeek) return "application/octet-stream";
+
+		byte[] header = new byte[MaxHeaderSize];
+		long originalPosition = stream.Position;
+
+		try
+		{
+			// Read the first 8 bytes and reset position immediately
+			int bytesRead = stream.Read(header, 0, MaxHeaderSize);
+			stream.Seek(originalPosition, SeekOrigin.Begin);
+
+			if (bytesRead < 2) return "application/octet-stream";
+
+			// 1. Check MagicByte.Defaults
+			var match = MagicByte.Defaults
+				.OrderByDescending(m => m.Data.Length)
+				.FirstOrDefault(m => m.Matches(header));
+
+			if (match == null) return "application/octet-stream";
+
+			return match.MimeType;
+		}
+		catch
+		{
+			return "application/octet-stream";
+		}
+	}
+
 }

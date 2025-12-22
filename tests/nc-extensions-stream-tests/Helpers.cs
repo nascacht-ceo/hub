@@ -13,6 +13,8 @@ public static class Helpers
 	{
 		using var input = File.OpenRead(sourcePath);
 		using var bitmap = SKBitmap.Decode(input);
+		if (bitmap == null)
+			throw new InvalidOperationException($"Failed to decode image from {sourcePath}.");
 
 		// 1. Alter a single pixel in the corner (invisible to humans)
 		bitmap.SetPixel(0, 0, new SKColor(254, 254, 254));
