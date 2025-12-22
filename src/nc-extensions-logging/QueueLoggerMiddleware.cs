@@ -22,7 +22,7 @@ public class QueueLoggerMiddleware
 		{ 
 			await _next(context); return; 
 		}
-		if (!_traceManager.TryGetTrace(traceId!, out var queueScope)) 
+		if (!_traceManager.TryGetScope(traceId!, out var queueScope)) 
 		{ 
 			_logger.LogWarning("Request has traceId {TraceId} but no active listener.", traceId!); 
 			await _next(context); 

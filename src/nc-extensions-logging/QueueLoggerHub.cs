@@ -23,7 +23,7 @@ public class QueueLoggerHub : Hub
 	/// Called when a new client connects to the Hub.
 	/// This is where we create and register the trace.
 	/// </summary>
-	public override Task OnConnectedAsync()
+	public override async Task OnConnectedAsync()
 	{
 		string traceId = Context.ConnectionId;
 		_logger.LogInformation("Client connected: {TraceId}. Creating trace...", traceId);
@@ -32,7 +32,7 @@ public class QueueLoggerHub : Hub
 		var queueScope = new QueueScope(traceId);
 
 		// 2. Register it with the singleton manager.
-		if (!_scopeManager.TryRegisterTrace(traceId, queueScope))
+		if (!_scopeManager.TryRegisterScope(traceId, queueScope))
 		{
 			// This should rarely happen, but if it does, log it.
 			_logger.LogWarning("TraceId {TraceId} was already in use.", traceId);
@@ -40,7 +40,7 @@ public class QueueLoggerHub : Hub
 			queueScope.Dispose();
 		}
 
-		return base.OnConnectedAsync();
+		await base.OnConnectedAsync();
 	}
 
 	/// <summary>
@@ -56,7 +56,7 @@ public class QueueLoggerHub : Hub
 		// This will call Dispose() on the QueueScope,
 		// which calls CompleteAdding(), which gracefully
 		// terminates the StreamLogs `await foreach` loop.
-		_scopeManager.UnregisterTrace(traceId);
+		_scopeManager.UnregisterScope(traceId);
 
 		return base.OnDisconnectedAsync(exception);
 	}
@@ -73,13 +73,13 @@ public class QueueLoggerHub : Hub
 	/// This is a server-to-client streaming method.
 	/// The client just calls "StreamLogs" (no params)
 	/// </summary>
-	public IEnumerable<QueueMessage> StreamLogs(CancellationToken ct)
+	public async IAsyncEnumerable<QueueMessage> StreamLogs([EnumeratorCancellation] CancellationToken ct)
 	{
 		string traceId = Context.ConnectionId;
 		_logger.LogInformation("Client {TraceId} starting log stream.", traceId);
 
 		// 1. Get the trace (which *must* exist, created in OnConnectedAsync)
-		if (!_scopeManager.TryGetTrace(traceId, out var queueScope))
+		if (!_scopeManager.TryGetScope(traceId, out var queueScope))
 		{
 			_logger.LogError("Could not find QueueScope for traceId {TraceId}. This should not happen.", traceId);
 			yield break;
@@ -100,6 +100,7 @@ public class QueueLoggerHub : Hub
 			foreach (var log in queueScope.Queue.GetConsumingEnumerable(ct))
 			{
 				yield return log;
+				await Task.Yield();
 			}
 		}
 		finally

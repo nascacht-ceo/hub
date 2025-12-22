@@ -9,7 +9,7 @@ namespace nc.Extensions.Logging;
 /// </summary>
 public class QueueScopeManager
 {
-	private readonly ConcurrentDictionary<string, QueueScope> _activeTraces = new();
+	private readonly ConcurrentDictionary<string, QueueScope> _queueScopes = new();
 	private readonly ILogger<QueueScopeManager> _logger;
 
 	public QueueScopeManager(ILogger<QueueScopeManager> logger)
@@ -20,9 +20,9 @@ public class QueueScopeManager
 	/// <summary>
 	/// Called by the SignalR Hub when a client connects.
 	/// </summary>
-	public bool TryRegisterTrace(string traceId, QueueScope queueScope)
+	public bool TryRegisterScope(string traceId, QueueScope queueScope)
 	{
-		if (_activeTraces.TryAdd(traceId, queueScope))
+		if (_queueScopes.TryAdd(traceId, queueScope))
 		{
 			_logger.LogInformation("Trace {TraceId} registered.", traceId);
 			return true;
@@ -34,9 +34,9 @@ public class QueueScopeManager
 	/// <summary>
 	/// Called by the SignalR Hub when a client disconnects.
 	/// </summary>
-	public void UnregisterTrace(string traceId)
+	public void UnregisterScope(string traceId)
 	{
-		if (_activeTraces.TryRemove(traceId, out var queueScope))
+		if (_queueScopes.TryRemove(traceId, out var queueScope))
 		{
 			_logger.LogInformation("Trace {TraceId} unregistered.", traceId);
 			// This will call CompleteAdding() on the queue
@@ -47,8 +47,8 @@ public class QueueScopeManager
 	/// <summary>
 	/// Called by the Middleware when an HTTP request arrives.
 	/// </summary>
-	public bool TryGetTrace(string traceId, out QueueScope? queueScope)
+	public bool TryGetScope(string traceId, out QueueScope? queueScope)
 	{
-		return _activeTraces.TryGetValue(traceId, out queueScope);
+		return _queueScopes.TryGetValue(traceId, out queueScope);
 	}
 }

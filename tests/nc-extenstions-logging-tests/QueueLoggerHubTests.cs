@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
 using nc.Extensions.Logging;
 
@@ -25,18 +26,15 @@ public class QueueLoggerHubTest : IClassFixture<Fixture>
 	public async Task HubAndMiddleware_EndToEnd_ShouldStreamLogs()
 	{
 		// --- ARRANGE ---
-
 		// 1. Create a SignalR Hub Connection
 		var connection = new HubConnectionBuilder()
 			.WithUrl("http://localhost/logHub", o =>
 			{
 				// Use the fixture's in-memory server handler
-				o.HttpMessageHandlerFactory = _ => _fixture.Server.CreateHandler();
+				o.HttpMessageHandlerFactory = _ => _fixture.TestHost.GetTestServer().CreateHandler();
 			})
 			.Build();
 
-		// 2. Create an HttpClient to make web requests
-		var httpClient = _fixture.CreateClient();
 
 		// 3. Create a list to store received logs
 		var receivedLogs = new List<QueueMessage>();
@@ -78,6 +76,7 @@ public class QueueLoggerHubTest : IClassFixture<Fixture>
 		request.Headers.Add("X-Trace-Id", traceId);
 
 		// 2. Send the HTTP request
+		var httpClient = _fixture.TestHost.GetTestServer().CreateClient();
 		var response = await httpClient.SendAsync(request);
 		response.EnsureSuccessStatusCode();
 

@@ -101,12 +101,16 @@ public class QueueLoggerFacts
 				.AddLogging(builder => builder.AddQueueLogger())
 				.BuildServiceProvider();
 			var logger = services.GetRequiredService<ILogger<QueueLoggerFacts>>();
-			var queue = new QueueScope();
-			using (var scope = logger.BeginScope(queue))
+			var queue = new ConcurrentQueue<QueueMessage>();
+			using (var queueScope = new QueueScope(queue: queue))
+			using (var scope = logger.BeginScope(queueScope))
 			{
-				logger.LogInformation("Message before dispose");
+				Parallel.For(0, 100, i =>
+				{
+					logger.LogInformation("Message {Index}", i);
+				});
 			}
-			Assert.True(queue.Queue.IsAddingCompleted);
+			Assert.Equal(100, queue.Count);
 		}
 
 		[Fact]
