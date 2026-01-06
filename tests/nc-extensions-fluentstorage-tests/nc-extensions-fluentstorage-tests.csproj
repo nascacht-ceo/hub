@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>nc.Extensions.Stream.Tests</RootNamespace>
+    <RootNamespace>nc.Extensions.FluentStorage.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -9,9 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
@@ -19,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\nc-extensions-fluentstorage\nc-extensions-fluentstorage.csproj" />
-    <ProjectReference Include="..\..\src\nc-extensions-streaming\nc-extensions-streaming.csproj" />
   </ItemGroup>
 
   <ItemGroup>

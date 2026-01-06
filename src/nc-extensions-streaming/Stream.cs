@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace nc_extensions_streaming;
+namespace nc.Extensions.Streaming;
 
 /// <summary>
 /// Provides extension methods for computing cryptographic and perceptual hashes on streams.
@@ -16,109 +16,35 @@ namespace nc_extensions_streaming;
 public static class StreamExtensions
 {
 	/// <summary>
-	/// Specifies the cryptographic hashing algorithm to use for computing hash values.
+	/// Calculates the <see cref="CryptographicHash"/>, <see cref="VisualHash"/> and <see cref="SemanticHash"/> of <paramref name="stream"/>.
 	/// </summary>
-	/// <remarks>This enumeration includes commonly used secure hash algorithms, as well as legacy algorithms such
-	/// as MD5 and SHA1. When selecting an algorithm, consider the security requirements of your application. Some
-	/// algorithms, such as MD5 and SHA1, are considered insecure for most cryptographic purposes and should be avoided in
-	/// new applications.</remarks>
-	public enum CryptographicHashingAlgorighm
+	/// <param name="stream">Stream to create a fingerprint of.</param>
+	/// <param name="algorithm">Cryptographic algorithm to use.</param>
+	/// <exception cref="ArgumentNullException">Throw if <paramref name="stream"/> is null.</exception>
+	/// <exception cref="InvalidOperationException">Thrown if <paramref name="stream"/> is not seekable.</exception>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Intended for production.")]
+	public static Fingerprint ToFingerprint(this Stream stream, CryptographicHashingAlgorighm? algorithm = CryptographicHashingAlgorighm.SHA256)
 	{
-		SHA256,
-		SHA384,
-		SHA512,
-		MD5,
-		SHA1,
-		RIPEMD160,
-		SHA3_256,
-		SHA3_384,
-		SHA3_512
+		ArgumentNullException.ThrowIfNull(stream);
+		if (!stream.CanSeek)
+			throw new InvalidOperationException("To calculate a fingerprint, the stream must beek seekable.");
+
+		stream.Position = 0;
+		var cryptographicHash = stream.CryptographicHash();
+		stream.Position = 0;
+		var visualHash = stream.VisualHash();
+		stream.Position = 0;
+		var semanticHash = stream.SemanticHash();
+		stream.Position = 0;
+
+		return new Fingerprint() 
+		{ 
+			CryptographicHash = cryptographicHash, 
+			VisualHash = visualHash, 
+			SemanticHash = semanticHash 
+		};
 	}
 
-	/// <summary>
-	/// Specifies the result of comparing two fingerprints for similarity or duplication.
-	/// </summary>
-	/// <remarks>Use this enumeration to interpret the outcome of a fingerprint comparison operation. The values
-	/// indicate whether the fingerprints are identical, likely duplicates, similar, or different, typically based on the
-	/// computed Hamming distance between them.</remarks>
-	public enum FingerprintMatch
-	{
-		/// <summary>
-		/// Exact fingerprint match
-		/// </summary>
-		Exact,
-		/// <summary>
-		/// Highly likely a duplicate based on Low Hamming Distance
-		/// Hamm
-		/// </summary>
-		Duplicate,
-		/// <summary>
-		/// Possilbe similar content based on Medium Hamming Distance
-		/// </summary>
-		Similar,
-		/// <summary>
-		/// Different content based on High Hamming Distance
-		/// </summary>
-		Different
-	}
-
-	public class FingerprintComparison
-	{
-		/// <summary>
-		/// Represents the default value for the low threshold setting: 3 bits.
-		/// </summary>
-		public const int DefaultThresholdLow = 3;
-
-		/// <summary>
-		/// Represents the default value for the high threshold setting. 10 bits.
-		/// </summary>
-		public const int DefaultThresholdHigh = 10;
-
-		/// <summary>
-		/// Gets or sets the lower threshold value used for calculating a <see cref="FingerprintMatch"/>.
-		/// </summary>
-		public int ThresholdLow { get; set; } = DefaultThresholdLow;
-
-		/// <summary>
-		/// Gets or sets the high threshold value used for calculating a <see cref="FingerprintMatch"/>.
-		/// </summary>
-		public int ThresholdHigh { get; set; } = DefaultThresholdHigh;
-
-		/// <summary>
-		/// Compares two fingerprint hashes and determines the degree of similarity between them.
-		/// </summary>
-		/// <remarks>The comparison is based on the Hamming distance between the two hashes. The thresholds for
-		/// determining duplicate and similar matches are defined by the ThresholdLow and ThresholdHigh values. This method
-		/// does not modify the input values.</remarks>
-		/// <param name="hashA">The first fingerprint hash to compare.</param>
-		/// <param name="hashB">The second fingerprint hash to compare.</param>
-		/// <returns>A value indicating whether the fingerprints are exact matches, duplicates, similar, or different.</returns>
-		public FingerprintMatch Compare(ulong hashA, ulong hashB)
-		{
-			int distance = System.Numerics.BitOperations.PopCount(hashA ^ hashB);
-			if (distance == 0)
-				return FingerprintMatch.Exact;
-			else if (distance <= ThresholdLow)
-				return FingerprintMatch.Duplicate;
-			else if (distance <= ThresholdHigh)
-				return FingerprintMatch.Similar;
-			else
-				return FingerprintMatch.Different;
-		}
-
-		public static FingerprintMatch Compare(ulong hashA, ulong hashB, int thresholdLow = DefaultThresholdLow, int thresholdHigh = DefaultThresholdHigh)
-		{
-			int distance = System.Numerics.BitOperations.PopCount(hashA ^ hashB);
-			if (distance == 0)
-				return FingerprintMatch.Exact;
-			else if (distance <= thresholdLow)
-				return FingerprintMatch.Duplicate;
-			else if (distance <= thresholdHigh)
-				return FingerprintMatch.Similar;
-			else
-				return FingerprintMatch.Different;
-		}
-	}
 
 	/// <summary>
 	/// Computes the cryptographic hash of the entire content of the specified stream using the given hashing algorithm.
@@ -186,7 +112,7 @@ public static class StreamExtensions
 	/// <exception cref="ArgumentNullException">Thrown if the stream parameter is null.</exception>
 	public static ulong VisualHash(this Stream stream)
 	{
-		if (stream == null) throw new ArgumentNullException(nameof(stream));
+		ArgumentNullException.ThrowIfNull(stream);
 		if (stream.CanSeek) stream.Position = 0;
 
 		// 1. Initialize the Codec
@@ -241,7 +167,7 @@ public static class StreamExtensions
 	/// </summary>
 	public static ulong SemanticHash(this Stream stream)
 	{
-		if (stream == null) throw new ArgumentNullException(nameof(stream));
+		ArgumentNullException.ThrowIfNull(stream);
 		if (stream.CanSeek) stream.Position = 0;
 
 		using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -249,7 +175,7 @@ public static class StreamExtensions
 
 		// 1. Tokenize (Clean text and split into words)
 		var words = text.ToLowerInvariant()
-						.Split(new[] { ' ', '\r', '\n', '\t', '.', ',', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+						.Split([' ', '\r', '\n', '\t', '.', ',', '!', '?'], StringSplitOptions.RemoveEmptyEntries);
 
 		// 2. Initialize a 64-bit weight vector
 		int[] v = new int[64];
@@ -299,7 +225,7 @@ public static class StreamExtensions
 		return hashedValue;
 	}
 
-	private static int MaxHeaderSize = MagicByte.Defaults.Max(m => m.Data.Length);
+	private static readonly int MaxHeaderSize = MagicByte.Defaults.Max(m => m.Data.Length);
 
 	/// <summary>
 	/// Determines the MIME type of the data contained in the specified stream by inspecting its header bytes.
@@ -310,7 +236,7 @@ public static class StreamExtensions
 	/// <param name="stream">The stream containing the data to analyze. The stream must be readable and seekable.</param>
 	/// <returns>A string representing the detected MIME type based on the stream's header. Returns "application/octet-stream" if
 	/// the MIME type cannot be determined or if the stream is not readable or seekable.</returns>
-	public static string GetMimeType(this Stream stream)
+	public static string GetMimeType(this Stream stream, bool includeMSOffice = false)
 	{
 		if (stream == null || !stream.CanRead || !stream.CanSeek) return "application/octet-stream";
 
@@ -332,12 +258,79 @@ public static class StreamExtensions
 
 			if (match == null) return "application/octet-stream";
 
+			// If we found a ZIP signature, check if it's actually an Office Document
+			if (match.MimeType == "application/zip" && includeMSOffice)
+				return GetMimeTypeMSOffice(stream);
+
+			if (match.MimeType == "application/ms-office" && includeMSOffice)
+				return GetMimeTypeLegacyMSOffice(stream); 
+
 			return match.MimeType;
 		}
 		catch
 		{
 			return "application/octet-stream";
 		}
+	}
+
+	public static string GetMimeTypeLegacyMSOffice(Stream stream)
+	{
+		try
+		{
+			// Read the first 512 bytes to check for legacy Office signatures
+			byte[] buffer = new byte[8192];
+			long originalPosition = stream.Position;
+			stream.ReadExactly(buffer, 0, buffer.Length);
+			stream.Seek(originalPosition, SeekOrigin.Begin);
+			string content = System.Text.Encoding.Unicode.GetString(buffer);
+
+			if (content.Contains("WordDocument"))
+				return "application/msword";
+
+			if (content.Contains("Workbook") || content.Contains("Book"))
+				return "application/vnd.ms-excel";
+
+			if (content.Contains("PowerPoint"))
+				return "application/vnd.ms-powerpoint";
+
+			if (content.Contains("__substg1.0")) // Common indicator for .msg files
+				return "application/vnd.ms-outlook";
+		}
+		catch
+		{
+			return "application/octet-stream";
+		}
+		return "application/ms-office";
+	}
+
+	public static string GetMimeTypeMSOffice(Stream stream)
+	{
+		try
+		{
+			// leaveOpen: true is vital to keep the stream alive for the next reader
+			using var archive = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read, leaveOpen: true);
+
+			if (archive.Entries.Any(e => e.FullName.StartsWith("word/")))
+				return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+			if (archive.Entries.Any(e => e.FullName.StartsWith("xl/")))
+				return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+			if (archive.Entries.Any(e => e.FullName.StartsWith("ppt/")))
+				return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+			if (archive.Entries.Any(e => e.FullName.StartsWith("visio/")))
+				return "application/vnd.ms-visio.drawing.main+xml";
+			if (archive.Entries.Any(e => e.FullName.StartsWith("onenote/")))
+				return "application/onenote";
+		}
+		catch
+		{
+			return "application/octet-stream";
+		}
+		finally
+		{
+			stream.Seek(0, SeekOrigin.Begin);
+		}
+
+		return "application/zip";
 	}
 
 }

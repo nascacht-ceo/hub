@@ -17,6 +17,7 @@
     <Project Path="src/nc-azure/nc-azure.csproj" />
     <Project Path="src/nc-cloud/nc-cloud.csproj" />
     <Project Path="src/nc-data/nc-data.csproj" />
+    <Project Path="src/nc-extensions-fluentstorage/nc-extensions-fluentstorage.csproj" Id="d899ef41-9e1d-4073-bacd-e63613a00c99" />
     <Project Path="src/nc-extensions-logging/nc-extensions-logging.csproj" Id="42da11aa-b43d-4673-b3fb-c337b6c97c33" />
     <Project Path="src/nc-extensions-streaming/nc-extensions-streaming.csproj" Id="7cb375c3-b71f-48ed-9b16-366b74b776d1" />
     <Project Path="src/nc-extensions/nc-extensions.csproj" />
@@ -38,6 +39,7 @@
     <Project Path="tests/nc-azure-tests/nc-azure-tests.csproj" />
     <Project Path="tests/nc-cloud-tests/nc-cloud-tests.csproj" />
     <Project Path="tests/nc-data-tests/nc-data-tests.csproj" />
+    <Project Path="tests/nc-extensions-fluentstorage-tests/nc-extensions-fluentstorage-tests.csproj" Id="db7d0e4a-14b0-4fa5-b2b1-5f006cf71ac0" />
     <Project Path="tests/nc-extensions-stream-tests/nc-extensions-stream-tests.csproj" Id="a4202655-7edf-45df-88d4-5b9571fae306" />
     <Project Path="tests/nc-extensions-tests/nc-extensions-tests.csproj" />
     <Project Path="tests/nc-extenstions-logging-tests/nc-extenstions-logging-tests.csproj" Id="9aad78c1-ef7b-45ad-a9db-0743563de20c" />
@@ -48,14 +50,5 @@
     <Project Path="tests/nc-reflection-tests/nc-reflection-tests.csproj" />
     <Project Path="tests/nc-scaling-tests/nc-scaling-tests.csproj" Id="0c231a13-d540-45ec-a780-54e88beca9ab" />
     <Project Path="tests/nc-web-tests/nc-web-tests.csproj" />
-  </Folder>
-  <Folder Name="/tests/data/">
-    <File Path="tests/data/bookmark.pdf" />
-    <File Path="tests/data/sample.477x640.jpg" />
-    <File Path="tests/data/sample.flac" />
-    <File Path="tests/data/sample.jpeg" />
-    <File Path="tests/data/sample.moving.gif" />
-    <File Path="tests/data/speech.mp3" />
-    <File Path="tests/data/speech.wav" />
   </Folder>
 </Solution>

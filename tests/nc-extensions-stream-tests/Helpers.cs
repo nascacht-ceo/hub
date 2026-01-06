@@ -12,9 +12,7 @@ public static class Helpers
 	public static void CreateImageNearDuplicate(string sourcePath, string outputPath)
 	{
 		using var input = File.OpenRead(sourcePath);
-		using var bitmap = SKBitmap.Decode(input);
-		if (bitmap == null)
-			throw new InvalidOperationException($"Failed to decode image from {sourcePath}.");
+		using var bitmap = SKBitmap.Decode(input) ?? throw new InvalidOperationException($"Failed to decode image from {sourcePath}.");
 
 		// 1. Alter a single pixel in the corner (invisible to humans)
 		bitmap.SetPixel(0, 0, new SKColor(254, 254, 254));
@@ -35,7 +33,7 @@ public static class Helpers
 
 		// 1. Change one word or add a typo (e.g., "The" -> "Teh")
 		// This should result in a very low Hamming Distance (1-3 bits)
-		string modifiedText = text.Replace(" the ", " teh ");
+		string modifiedText = text.Replace(" the ", " teh ").Replace(" ", "  ");
 
 		File.WriteAllText(outputPath, modifiedText, Encoding.UTF8);
 	}
