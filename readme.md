@@ -7,6 +7,12 @@ The target audience for this suite include:
 - developers that need to refactor existing systems
 - business analysts that need to implement domain-specific solutions from existing systems
 
+# License
+
+This project is licensed under the [Business Source License 1.1](LICENSE.md). 
+It is free for educational use, non-profits, and companies with under $50M in revenue for non-production uses. 
+For all other uses, a commercial license is required. It automatically converts to the MIT License on January 1, 2030.
+
 # Cloud
 
 The `nc-cloud` project provides abstractions across Amazon Web Services, Microsoft Azure, and Google Cloud Platform.

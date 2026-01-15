@@ -4,10 +4,6 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Writers;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
@@ -130,10 +126,9 @@ public class OpenApiService
         try
         {
             var stream = await client.GetStreamAsync(location);
-            var reader = new OpenApiStreamReader();
-            var document = reader.Read(stream, out var diagnostic);
 
-            if (diagnostic.Errors.Count > 0)
+            var (document, diagnostic) = await OpenApiDocument.LoadAsync(stream);
+			if (diagnostic?.Errors.Count > 0)
             {
                 foreach (var error in diagnostic.Errors)
                     _logger?.LogWarning(error.Message);
@@ -153,13 +148,13 @@ public class OpenApiService
         }
     }
 
-    private string OpenApiDocumentToJson(OpenApiDocument document, OpenApiSpecVersion version = OpenApiSpecVersion.OpenApi3_0)
+    private string OpenApiDocumentToJson(OpenApiDocument document, OpenApiSpecVersion version = OpenApiSpecVersion.OpenApi3_1)
     {
         using var stream = new MemoryStream();
         using var writer = new StreamWriter(stream, new UTF8Encoding(false));
         var openApiWriter = new OpenApiJsonWriter(writer);
 
-        document.Serialize(openApiWriter, version);
+        document.SerializeAs(version, openApiWriter);
         writer.Flush();
 
         return Encoding.UTF8.GetString(stream.ToArray());
@@ -167,9 +162,18 @@ public class OpenApiService
 
     private OpenApiDocument JsonToOpenApiDocument(string json)
     {
-        var openApiReader = new OpenApiStringReader();
-        var document = openApiReader.Read(json, out var diagnostic);
-        return document;
+        var readResult = OpenApiDocument.Parse(json);
+        if (readResult.Diagnostic?.Errors.Count > 0)
+        {
+            foreach (var error in readResult.Diagnostic.Errors)
+                _logger?.LogWarning(error.Message);
+            throw new InvalidOperationException(_localizer[nameof(Resources.Errors.OpenApiSpecInvalidCached)]);
+        }
+        if (readResult.Document == null)
+        {
+            throw new InvalidOperationException(_localizer[nameof(Resources.Errors.OpenApiSpecInvalidCached)]);
+        }
+        return readResult.Document;
     }
 
     /// <summary>

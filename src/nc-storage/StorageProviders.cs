@@ -1,4 +1,4 @@
-﻿namespace nc.Extensions.FluentStorage;
+﻿namespace nc.Storage;
 
 public static class StorageProviders
 {

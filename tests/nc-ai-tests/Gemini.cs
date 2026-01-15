@@ -80,9 +80,9 @@ public class Gemini
 		var question = new TextContent("What is the total amount in box 1?");
 		var userMessage = new ChatMessage(
 			ChatRole.User,
-			new List<AIContent> { file, question } // Combining text and file content
+			[file, question] // Combining text and file content
 		);
-		var response = await Client.GetResponseAsync(new[] { userMessage });
+		var response = await Client.GetResponseAsync([userMessage]);
 
 	}
 }

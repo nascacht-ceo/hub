@@ -123,6 +123,9 @@
   <data name="OpenApiServiceNotRegistered" xml:space="preserve">
     <value>OpenApiService has not been registered. Did you forget to call services.AddNascachtOpenApi()?</value>
   </data>
+  <data name="OpenApiSpecInvalidCached" xml:space="preserve">
+    <value>OpenApi spec in cache is invalid.</value>
+  </data>
   <data name="OpenApiSpecNotRegistered" xml:space="preserve">
     <value>No OpenApi specification with this name has been registered.
 Valid values are: {0}</value>

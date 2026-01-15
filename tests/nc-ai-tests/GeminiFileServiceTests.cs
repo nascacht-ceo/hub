@@ -46,6 +46,6 @@ public class GeminiFileServiceTests
 	// Minimal HttpClientFactory for integration testing
 	private class DefaultHttpClientFactory : IHttpClientFactory
 	{
-		public HttpClient CreateClient(string name) => new HttpClient();
+		public HttpClient CreateClient(string name) => new();
 	}
 }

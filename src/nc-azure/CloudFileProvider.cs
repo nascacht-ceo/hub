@@ -33,7 +33,13 @@ public class CloudFileProvider : ICloudFileProvider
         catch (Azure.RequestFailedException ex) when (ex.Status == 404)
         {
             // Check if it's a "folder" (by trying to list children)
-            var folderCheck = containerClient.GetBlobsByHierarchyAsync(prefix: filePath, delimiter: "/");
+            var folderCheck = containerClient.GetBlobsByHierarchyAsync(
+                traits: Azure.Storage.Blobs.Models.BlobTraits.None,
+                states: Azure.Storage.Blobs.Models.BlobStates.None,
+                delimiter: "/",
+                prefix: filePath,
+                cancellationToken: cancellationToken
+            );
             var folder = await folderCheck.FirstOrDefaultAsync(item => item.IsPrefix);
             if (folder == null)
                 return new CloudFileInfo(blobClient, filePath);
@@ -50,7 +56,13 @@ public class CloudFileProvider : ICloudFileProvider
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(_container);
         return containerClient
-            .GetBlobsByHierarchyAsync(prefix: directoryPath, delimiter: "/")
+            .GetBlobsByHierarchyAsync(
+                traits: Azure.Storage.Blobs.Models.BlobTraits.None,
+                states: Azure.Storage.Blobs.Models.BlobStates.None,
+                delimiter: "/",
+                prefix: directoryPath,
+                cancellationToken: cancellationToken
+            )
             .Select(blob => {
                 var client = (blob.IsPrefix) 
                     ? containerClient.GetBlobClient(blob.Prefix) 
@@ -85,7 +97,12 @@ public class CloudFileProvider : ICloudFileProvider
             if (cleanPath.EndsWith("/"))
             {
                 // Recursively delete blobs within the folder
-                var blobs = containerClient.GetBlobsAsync(prefix: cleanPath);
+                var blobs = containerClient.GetBlobsAsync(
+                    Azure.Storage.Blobs.Models.BlobTraits.None,
+                    Azure.Storage.Blobs.Models.BlobStates.None,
+                    cleanPath,
+                    cancellationToken
+                );
                 await foreach (var blob in blobs)
                 {
                     var blobUri = containerClient.GetBlobClient(blob.Name).Uri;

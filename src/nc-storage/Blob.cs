@@ -1,7 +1,7 @@
 ﻿using FluentStorage.Blobs;
 using System.IO.Abstractions;
 
-namespace nc.Extensions.FluentStorage;
+namespace nc.Storage;
 
 public static class BlobExtensions
 {
@@ -21,13 +21,13 @@ public static class BlobExtensions
 			get 
 			{
 				if (blob == null) return null;
-				if (blob.Metadata.ContainsKey(MimeType))
-					return blob.Metadata[MimeType];
+				if (blob.Metadata.TryGetValue(MimeType, out string? value))
+					return value;
 				string? mimeType = null;
-				if (blob.Properties.ContainsKey("ContentType"))
-					mimeType = blob.Properties["ContentType"] as string;
-				if (mimeType == null && blob.Properties.ContainsKey("Content-Type"))
-					mimeType = blob.Properties["Content-Type"] as string;
+				if (blob.Properties.TryGetValue("ContentType", out object? value1))
+					mimeType = value1 as string;
+				if (mimeType == null && blob.Properties.TryGetValue("Content-Type", out object? value2))
+					mimeType = value2 as string;
 				if (mimeType != null)
 					blob.Metadata[MimeType] = mimeType;
 				return mimeType;

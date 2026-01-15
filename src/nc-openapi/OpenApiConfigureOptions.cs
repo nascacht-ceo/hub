@@ -23,7 +23,7 @@ public class OpenApiConfigureOptions : IConfigureOptions<OpenApiOptions>
 		_logger?.LogTrace("Configuring OpenApiService-driven endpoints.");
 		options.AddDocumentTransformer((document, context, cancellationToken) =>
 		{
-			document.Paths.TryAdd("transformer", new Microsoft.OpenApi.Models.OpenApiPathItem());
+			document.Paths.TryAdd("transformer", new Microsoft.OpenApi.OpenApiPathItem());
 			//var service = context.ApplicationServices.GetService<OpenApiService>();
 			//foreach (var endpoint in service!.ListEndpoints())
 			//{

@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace nc.Extensions.FluentStorage.Tests;
+namespace nc.Storage.Tests;
 
 public class StorageServiceFacts
 {
 	private readonly StorageServiceOptions _storageServiceOptions;
 	private readonly StorageService _storageService;
 
-	public StorageServiceFacts() 
+	public StorageServiceFacts()
 	{
 		_storageServiceOptions = new StorageServiceOptions()
 		{
@@ -28,7 +28,7 @@ public class StorageServiceFacts
 		_storageService = new StorageService(_storageServiceOptions);
 	}
 
-	public class GetConnectionString: StorageServiceFacts
+	public class GetConnectionString : StorageServiceFacts
 	{
 		[Theory]
 		[InlineData("aws.s3://some/bucket/file.txt", false)]
@@ -48,9 +48,9 @@ public class StorageServiceFacts
 		[InlineData("s3://some/bucket/file.txt", "aws.s3://bucket=some;region=us-east-1")]
 		[InlineData("aws.s3://some/bucket/file.txt", "aws.s3://bucket=some;region=us-east-1")]
 		[InlineData("aws.s3://secure/bucket/file.txt", "aws.s3://key=awsUser;secret=awsPassword;region=us-south-2;bucket=secure")]
-		[InlineData("gcp://some/bucket/file.txt", "google.gcp://project=some")]
-		[InlineData("google://some/bucket/file.txt", "google.gcp://project=some")]
-		[InlineData("google.gcp://some/bucket/file.txt", "google.gcp://project=some")]
+		[InlineData("gcp://some/bucket/file.txt", "google.storage://bucket=some")]
+		[InlineData("google://some/bucket/file.txt", "google.storage://bucket=some")]
+		[InlineData("google.gcp://some/bucket/file.txt", "google.storage://bucket=some")]
 		public void NormalizesUri(string url, string expected)
 		{
 			var uri = new Uri(url);
@@ -61,7 +61,7 @@ public class StorageServiceFacts
 
 		[Theory]
 		[InlineData("aws.s3://secure/bucket/file.txt", "aws.s3://key=awsUser;secret=awsPassword;region=us-south-2;bucket=secure")]
-		[InlineData("google.gcp://secure/bucket/file.txt", "google.gcp://project=secure;json=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50IiwicHJvamVjdF9pZCI6InNlY3VyZSIsInByaXZhdGVfa2V5X2lkIjpudWxsLCJwcml2YXRlX2tleSI6IkZha2UiLCJjbGllbnRfZW1haWwiOiJtZUBnbWFpbC5jb20iLCJjbGllbnRfaWQiOm51bGwsImF1dGhfdXJpIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLCJ0b2tlbl91cmkiOiJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6Imh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsImNsaWVudF94NTA5X2NlcnRfdXJsIjpudWxsfQ==")]
+		[InlineData("google.gcp://secure/bucket/file.txt", "google.storage://project=secure;cred=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50IiwicHJvamVjdF9pZCI6InNlY3VyZSIsInByaXZhdGVfa2V5X2lkIjpudWxsLCJwcml2YXRlX2tleSI6IkZha2UiLCJjbGllbnRfZW1haWwiOiJtZUBnbWFpbC5jb20iLCJjbGllbnRfaWQiOm51bGwsImF1dGhfdXJpIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLCJ0b2tlbl91cmkiOiJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6Imh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsImNsaWVudF94NTA5X2NlcnRfdXJsIjpudWxsfQ==")]
 		public void InjectsCredential(string url, string expected)
 		{
 			var uri = new Uri(url);
@@ -119,21 +119,20 @@ public class StorageServiceFacts
 		[InlineData("aws.s3://nascacht-io-tests/speech.mp3")]
 		[InlineData("aws.s3://nascacht-io-tests/speech.wav")]
 		[InlineData("google.gcp://nascacht-io-tests/bookmark.pdf")]
+		[InlineData("disk://./nc-storage-tests.deps.json")]
 
-		public async Task ReadsFiles(string url)
+		public async Task FindsFile(string url)
 		{
-			await foreach (var blob in _storageService.GetBlobsAsync([url]))
-			{
-				Assert.NotNull(blob);
-				Assert.NotEqual(0, blob.Size);
-				Assert.Contains(BlobExtensions.Uri, blob.Metadata);
-			}
+			var blob = await _storageService.GetBlobsAsync([url]).FirstOrDefaultAsync();
+			Assert.NotNull(blob);
+			Assert.NotEqual(0, blob.Size);
+			Assert.Contains(BlobExtensions.Uri, blob.Metadata);
 		}
 
 
 	}
 
-	public class ListAsync: StorageServiceFacts
+	public class ListAsync : StorageServiceFacts
 	{
 		[Theory]
 		[InlineData("google.gcp://nascacht-io-tests/", 8)]
@@ -149,6 +148,23 @@ public class StorageServiceFacts
 			Assert.Equal(expectedFiles, blobs.Count());
 			foreach (var blob in blobs)
 				Assert.Contains(BlobExtensions.Uri, blob.Metadata);
+		}
+	}
+
+	public class WriteAsync : StorageServiceFacts
+	{
+		[Fact]
+		public async Task WritesFiles()
+		{
+			using var stream = new MemoryStream();
+			stream.Write(Encoding.UTF8.GetBytes("Hello, World!"));
+			stream.Position = 0;
+			var guid = Guid.NewGuid();
+			await _storageService.WriteAsync($"disk://./{guid}", stream);
+			Assert.True(File.Exists($"./{guid}"));
+			var info = new FileInfo($"./{guid}");
+			Assert.NotNull(info);
+			Assert.Equal(13, info.Length);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>nc.Extensions.FluentStorage</RootNamespace>
+    <RootNamespace>nc.Storage</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -14,7 +14,11 @@
     <PackageReference Include="FluentStorage.FTP" Version="6.0.0" />
     <PackageReference Include="FluentStorage.GCP" Version="6.0.0" />
     <PackageReference Include="FluentStorage.SFTP" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\nc-scaling\nc-scaling.csproj" />
   </ItemGroup>
 
 </Project>

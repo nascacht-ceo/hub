@@ -1,15 +1,13 @@
-﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
-using Azure.Storage.Blobs.Models;
-using FluentStorage;
+﻿using FluentStorage;
 using FluentStorage.Blobs;
 using FluentStorage.Utils.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
+using nc.Scaling;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
-namespace nc.Extensions.FluentStorage;
+namespace nc.Storage;
 
 public class StorageService
 {
@@ -79,7 +77,7 @@ public class StorageService
 				? $"ftp://host={uri.Host};user=anonymous"
 				: $"ftp://host={uri.Host};user={credential!.UserName};pass={credential.Password}",
 
-			StorageProviders.Disk => $"disk://path={uri.LocalPath}",
+			StorageProviders.Disk => $"disk://path={uri.Host}",
 
 			StorageProviders.Memory => "mem://",
 
@@ -87,6 +85,7 @@ public class StorageService
 				$"Uri scheme mapping '{prefix}' is invalid. Allowed prefixes are: {string.Join(",", _options.PrefixMapping.Values.Distinct())}")
 		};
 	}
+	
 	public IBlobStorage GetBlobStorage(Uri uri)
 	{
 		var connectionString = GetConnectionString(uri);
@@ -102,10 +101,19 @@ public class StorageService
 		}
 	}
 
+	protected Uri ToUri(string url)
+	{
+		if (url.StartsWith("default://"))
+			url = url.Replace("default://", _options.DefaultHost);
+		if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+			throw new ArgumentOutOfRangeException(nameof(url), "The url must be a valid uri, such as google:storage://mybucket/folder/file.txt");
+		return uri;
+	}
+
 	#region IBlobStorage Implementation
 	public async Task<IEnumerable<Blob>> ListAsync(string url, CancellationToken cancellationToken = default)
 	{
-		var uri = new Uri(url);	
+		var uri = ToUri(url);	
 		var options = ToListOptions(uri, out var extension);
 		using var storage = GetBlobStorage(uri);
 
@@ -122,7 +130,7 @@ public class StorageService
 
 	public async Task WriteAsync(string url, Stream dataStream, bool append = false, CancellationToken cancellationToken = default)
 	{
-		var uri = new Uri(url);
+		var uri = ToUri(url);
 		using var blobStorage = GetBlobStorage(uri);
 		// await blobStorage.WriteAsync(uri.AbsolutePath.TrimStart('/'), dataStream, append, cancellationToken);
 		await blobStorage.WriteAsync(StoragePath.Normalize(uri.AbsolutePath), dataStream, append, cancellationToken);
@@ -130,7 +138,7 @@ public class StorageService
 
 	public async Task<Stream> OpenReadAsync(string url, CancellationToken cancellationToken = default)
 	{
-		var uri = new Uri(url);
+		var uri = ToUri(url);
 		using var blobStorage = GetBlobStorage(uri);
 		return await blobStorage.OpenReadAsync(StoragePath.Normalize(uri.AbsolutePath), cancellationToken);
 	}
@@ -139,14 +147,14 @@ public class StorageService
 	{
 		// 1. Convert strings to Uris and group by the root (Scheme + Host)
 		var groups = urls
-			.Select(path => new Uri(path))
+			.Select(path => ToUri(path))
 			.GroupBy(uri => $"{uri.Scheme}://{uri.Host}");
 
 		// 2. Parallel execute across the different storage targets
 		await Parallel.ForEachAsync(groups, cancellationToken, async (group, ct) =>
 		{
 			// group.Key is the root URI (e.g., s3://my-bucket)
-			var rootUri = new Uri(group.Key);
+			var rootUri = ToUri(group.Key);
 
 			// Resolve the storage provider once for this group
 			using var blobStorage = GetBlobStorage(rootUri);
@@ -165,12 +173,12 @@ public class StorageService
 	{
 		// 1. Group by provider as before
 		var groups = urls
-			.Select(p => new Uri(p))
+			.Select(p => ToUri(p))
 			.GroupBy(uri => $"{uri.Scheme}://{uri.Host}");
 
 		foreach (var group in groups)
 		{
-			using var storage = GetBlobStorage(new Uri(group.Key));
+			using var storage = GetBlobStorage(ToUri(group.Key));
 			var paths = group.Select(uri => StoragePath.Normalize(uri.AbsolutePath)).ToList();
 
 			// 2. Process this group in chunks
@@ -188,11 +196,33 @@ public class StorageService
 		}
 	}
 
+	public async Task CopyAsync(string sourceUrl, string desintationUrl, CancellationToken cancellationToken = default)
+	{
+		var sources = await ListAsync(sourceUrl, cancellationToken);
+		var destination = GetBlobStorage(ToUri(desintationUrl));
+		await new TplPipeline()
+			.From<Blob>(sources.ToAsyncEnumerable())
+			.Transform<Blob, Blob>(async blob =>
+			{
+				var relativePath = StoragePath.Normalize(ToUri(desintationUrl).AbsolutePath);
+				var destinationBlob = new Blob(relativePath, blob.Kind)
+				{
+					Uri = $"{ToUri(desintationUrl).Scheme}://{ToUri(desintationUrl).Host}/{relativePath}",
+				};
+				destinationBlob.Metadata.AddRange(blob.Metadata);
+				destinationBlob.Properties.AddRange(blob.Properties);
+				return destinationBlob;
+			})
+			.ExecuteAsync<Blob>()
+			.ToListAsync(cancellationToken: cancellationToken);
+		
+	}
+
 	public async IAsyncEnumerable<Blob> GetBlobsAsync(IEnumerable<string> urls, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		// 1. Group by storage target (Scheme + Host)
 		var groups = urls
-			.Select(p => new Uri(p))
+			.Select(p => ToUri(p))
 			.GroupBy(uri => $"{uri.Scheme}://{uri.Host}");
 
 		// 2. Create an unbounded channel to collect results from all parallel tasks
@@ -203,7 +233,7 @@ public class StorageService
 		{
 			try
 			{
-				var uri = new Uri(group.Key);
+				var uri = ToUri(group.Key);
 				using var storage = GetBlobStorage(uri);
 				var relativePaths = group.Select(uri => StoragePath.Normalize(uri.AbsolutePath)).ToArray();
 
@@ -235,23 +265,18 @@ public class StorageService
 		await backgroundTask;
 	}
 
-	//public Task SetBlobsAsync(IEnumerable<Blob> blobs, CancellationToken cancellationToken = default)
-	//{
-	//	throw new NotImplementedException();
-	//}
-
 	public async Task SetBlobsAsync(IEnumerable<Blob> blobs, CancellationToken cancellationToken = default)
 	{
 		// 1. Group by the root storage target (Scheme + Host)
 		// We assume the Blob.FullPath is a universal URI (e.g., s3://bucket/path)
 		var groups = blobs
-			.Select(blob => new { Original = blob, Uri = new Uri(blob.FullPath) })
+			.Select(blob => new { Original = blob, Uri = ToUri(blob.FullPath) })
 			.GroupBy(item => $"{item.Uri.Scheme}://{item.Uri.Host}");
 
 		// 2. Parallel execute updates across providers
 		await Parallel.ForEachAsync(groups, cancellationToken, async (group, ct) =>
 		{
-			var rootUri = new Uri(group.Key);
+			var rootUri = ToUri(group.Key);
 			using var blobStorage = GetBlobStorage(rootUri);
 
 			await blobStorage.SetBlobsAsync(group.Select(item =>
@@ -305,4 +330,14 @@ public class StorageService
 		};
 	}
 	#endregion IBlobStorage Implementation
+}
+
+public class StorageService<T>: StorageService where T: IBlobTransformer
+{
+	private readonly IBlobTransformer _transformer;
+
+	public StorageService(IBlobTransformer transformer)
+	{
+		_transformer = transformer;
+	}
 }

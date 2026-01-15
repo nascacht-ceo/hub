@@ -38,7 +38,7 @@ public class BlobRepository : IRepository<ICloudFile>
         if (cleanPath.EndsWith("/"))
         {
             // Recursively delete blobs within the folder
-            var blobs = containerClient.GetBlobsAsync(prefix: cleanPath);
+            var blobs = containerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, cleanPath, cancellationToken);
             await foreach (var blob in blobs)
             {
                 var blobUri = containerClient.GetBlobClient(blob.Name).Uri;
@@ -108,7 +108,12 @@ public class BlobRepository : IRepository<ICloudFile>
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(_container);
         return containerClient
-            .GetBlobsByHierarchyAsync(prefix: directoryPath, delimiter: fileQuery.FolderDelimiter)
+            .GetBlobsByHierarchyAsync(
+                traits: BlobTraits.None,
+                states: BlobStates.None,
+                delimiter: fileQuery.FolderDelimiter,
+                prefix: directoryPath,
+                cancellationToken: cancellationToken)
             .Select(blob =>
             {
                 var client = (blob.IsPrefix)

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using nc.Extensions.FluentStorage;
+using nc.Storage;
 using nc.Extensions.Streaming;
 using System.IO;
 using Xunit;
@@ -10,17 +10,12 @@ public class StreamExtensionsFacts: IClassFixture<StreamExtensionsFixture>
 {
 	protected readonly StreamExtensionsFixture _fixture;
 
-	public StreamExtensionsFacts(StreamExtensionsFixture fixture)
-	{
-		_fixture = fixture;
-	}
+	public StreamExtensionsFacts(StreamExtensionsFixture fixture) 
+		=> _fixture = fixture;
 
-	public class CryptographicHashFact: StreamExtensionsFacts
+	public class CryptographicHashFact(StreamExtensionsFixture fixture) 
+		: StreamExtensionsFacts(fixture)
 	{
-		public CryptographicHashFact(StreamExtensionsFixture fixture) : base(fixture)
-		{
-		}
-
 		[Theory]
 		[InlineData("data/bookmark.pdf")]
 		[InlineData("data/sample.477x640.jpg")]
@@ -89,12 +84,9 @@ public class StreamExtensionsFacts: IClassFixture<StreamExtensionsFixture>
 
 	}
 
-	public class SemanticHashFacts: StreamExtensionsFacts
+	public class SemanticHashFacts(StreamExtensionsFixture fixture) 
+		: StreamExtensionsFacts(fixture)
 	{
-		public SemanticHashFacts(StreamExtensionsFixture fixture) : base(fixture)
-		{
-		}
-
 		[Theory]
 		[InlineData("data/bookmark.txt")]
 		[InlineData("../../../StreamExtensionsFacts.cs")]

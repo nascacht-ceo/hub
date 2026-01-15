@@ -1,6 +1,6 @@
 ﻿using FluentStorage.Blobs;
 
-namespace nc.Extensions.FluentStorage.Tests;
+namespace nc.Storage.Tests;
 
 public class BlobExtensionsFacts
 {

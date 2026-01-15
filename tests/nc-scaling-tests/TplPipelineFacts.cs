@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Reflection.Metadata.Ecma335;
 
 namespace nc.Scaling.Tests
 {
@@ -24,7 +23,7 @@ namespace nc.Scaling.Tests
 				.From(inputs)
 				.ExecuteAsync<int>()
 				.ToListAsync();
-			Assert.Equal(new[] { 1, 2, 3, 4, 5 }, results.OrderBy(x => x));
+			Assert.Equal([1, 2, 3, 4, 5], results.OrderBy(x => x));
 		}
 
 		[Fact]
@@ -36,7 +35,7 @@ namespace nc.Scaling.Tests
 				.Transform<int, int>(async i => await Task.FromResult(i * 2))
 				.ExecuteAsync<int>()
 				.ToListAsync();
-			Assert.Equal(new[] { 2, 4, 6, 8, 10 }, results.OrderBy(x => x));
+			Assert.Equal([2, 4, 6, 8, 10], results.OrderBy(x => x));
 		}
 
 		[Fact]
@@ -72,7 +71,7 @@ namespace nc.Scaling.Tests
 				.Filter<int>(i => (i % 2 == 0))
 				.ExecuteAsync<int>()
 				.ToListAsync();
-			Assert.Equal(new[] { 2, 4 }, results.OrderBy(x => x));
+			Assert.Equal([2, 4], results.OrderBy(x => x));
 		}
 
 		[Fact]
@@ -98,9 +97,9 @@ namespace nc.Scaling.Tests
 				.ExecuteAsync<IEnumerable<int>>()
 				.ToListAsync();
 			Assert.Equal(3, results.Count);
-			Assert.Equal(new[] { 1, 2, 3 }, results[0].OrderBy(x => x));
-			Assert.Equal(new[] { 4, 5, 6 }, results[1].OrderBy(x => x));
-			Assert.Equal(new[] { 7, 8, 9 }, results[2].OrderBy(x => x));
+			Assert.Equal([1, 2, 3], results[0].OrderBy(x => x));
+			Assert.Equal([4, 5, 6], results[1].OrderBy(x => x));
+			Assert.Equal([7, 8, 9], results[2].OrderBy(x => x));
 		}
 
 		[Fact]
