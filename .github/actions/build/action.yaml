@@ -1,0 +1,12 @@
+name: 'Dotnet Build'
+description: 'Compiles the solution'
+inputs:
+  configuration:
+    description: 'The build configuration (Debug/Release)'
+    required: true
+    default: 'Debug'
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: dotnet build --configuration ${{ inputs.configuration }} --no-restore

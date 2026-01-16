@@ -11,14 +11,22 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/Solution Items/.github/" />
+  <Folder Name="/Solution Items/.github/actions/" />
+  <Folder Name="/Solution Items/.github/actions/build/">
+    <File Path=".github/actions/build/action.yaml" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/actions/pack/">
+    <File Path=".github/actions/pack/action.yaml" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/actions/setup/">
+    <File Path=".github/actions/setup/action.yaml" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/actions/test/">
+    <File Path=".github/actions/test/action.yaml" />
+  </Folder>
   <Folder Name="/Solution Items/.github/workflows/">
     <File Path=".github/workflows/commit.yaml" />
     <File Path=".github/workflows/tag.yaml" />
-    <File Path=".github/workflows/_build.yaml" />
-    <File Path=".github/workflows/_pack.yaml" />
-    <File Path=".github/workflows/_restore.yaml" />
-    <File Path=".github/workflows/_shared.yaml" />
-    <File Path=".github/workflows/_test.yaml" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/nc-ai/nc-ai.csproj" />

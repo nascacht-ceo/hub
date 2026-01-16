@@ -1,0 +1,14 @@
+name: 'Dotnet Test'
+description: 'Runs unit and integration tests'
+inputs:
+  configuration:
+    description: 'The build configuration to test'
+    required: true
+    default: 'Debug'
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: dotnet test --configuration ${{ inputs.configuration }} --no-build
+      env:
+        nc_hub__aws__serviceurl: "http://localhost:4566"

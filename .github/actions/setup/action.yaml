@@ -1,0 +1,26 @@
+# .github/actions/setup/action.yml
+name: 'Setup'
+description: 'Prepares SDK, Updates Packages, and Restores'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/global.json', '**/*.csproj') }}
+
+    - name: Update & Restore
+      shell: bash
+      run: |
+        # 1. Install the tool
+        dotnet tool install --global dotnet-outdated-tool
+        
+        # 2. Update the .csproj files (source change)
+        dotnet outdated -u
+        
+        # 3. Restore based on the UPDATED .csproj files
+        dotnet restore

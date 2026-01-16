@@ -4,13 +4,27 @@ on:
     branches: [ main ]
 
 jobs:
-  restore:
-    uses: ./.github/workflows/_restore.yaml
-    with:
-      update_packages: false
+  ci-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup & Restore
+        uses: ./.github/actions/setup
+        
+      - name: Build Debug
+        uses: ./.github/actions/build
+        with:
+          configuration: Debug
 
-  build:
-    needs: restore
-    uses: ./.github/workflows/_build.yaml
-    with:
-      configuration: Debug
+      - name: Test Debug
+        uses: ./.github/actions/test
+        with:
+          configuration: Debug
+
+      - name: Pack Prerelease
+        uses: ./.github/actions/pack
+        with:
+          configuration: Debug
+          version_suffix: ci-${{ github.run_number }}
+          nuget_key: ${{ secrets.NUGET_API_KEY }}

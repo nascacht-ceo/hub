@@ -1,28 +1,31 @@
-name: CD Release Tag
+name: CD Tag Release
 on:
   push:
     tags: [ 'v*' ]
 
 jobs:
-  restore:
-    uses: ./.github/workflows/_restore.yaml
-  
-  build:
-    needs: restore
-    uses: ./.github/workflows/_build.yaml
-    with:
-      configuration: Release
+  release-pipeline:
+    runs-on: ubuntu-latest
+    environment: production  # Requires manual approval in GitHub UI
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup & Restore
+        uses: ./.github/actions/setup
+        
+      - name: Build Release
+        uses: ./.github/actions/build
+        with:
+          configuration: Release
 
-  test:
-    needs: build
-    uses: ./.github/workflows/_test.yaml
-    with:
-      configuration: Release
-    secrets: inherit
+      - name: Test Release
+        uses: ./.github/actions/test
+        with:
+          configuration: Release
 
-  pack:
-    # Tags only pack if tests pass!
-    needs: test
-    uses: ./.github/workflows/_pack.yaml
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      - name: Pack Stable
+        uses: ./.github/actions/pack
+        with:
+          configuration: Release
+          # version_suffix omitted = Stable 1.0.0
+          nuget_key: ${{ secrets.NUGET_API_KEY }}
