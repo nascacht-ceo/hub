@@ -1,6 +1,7 @@
 ﻿using Anthropic.SDK;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using System.Text;
 
 namespace nc.Ai.Tests;
@@ -14,8 +15,9 @@ public class Claude
 	{
 		Configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
+			.AddEnvironmentVariables("nc_hub__")
 			.Build()
-			.GetSection("tests:nc-ai-tests:claude");
+			.GetSection("tests:nc_ai_tests:claude");
 
 		Client = new AnthropicClient(apiKeys: Configuration["apikey"]).Messages;
 	}

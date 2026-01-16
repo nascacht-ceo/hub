@@ -271,3 +271,40 @@ dotnet outdated
 dotnet outdated -u
 dotnet outdated -u -pre Always -inc "nc-*"
 ```
+
+# Testing
+
+```bash
+$secrets = dotnet user-secrets list --id nc-hub --json | ConvertFrom-Json
+
+# 2. Define your prefix
+$prefix = "nc_hub__"
+
+# 3. Process and Sync
+$secrets.psobject.properties | ForEach-Object {
+    $localKey = $_.Name
+    $value = $_.Value
+    
+    # Transform key: Replace ':' with '__' to make it POSIX compliant
+    # We leave dashes alone for now, but usually it's safer to -replace '-', '_'
+    $safeKey = $localKey -replace ':', '__'
+    
+    # Prepend the requested prefix
+    $ghSecretName = $prefix + $safeKey
+    
+    Write-Host "Syncing local '$localKey' to GitHub Secret '$ghSecretName'..."
+    
+    # Push to GitHub
+    gh secret set $ghSecretName --body "$value"
+}
+```
+```
+# This command converts your local nc-hub secrets to GitHub-friendly env variables
+dotnet user-secrets list --id nc-hub --json | ConvertFrom-Json | ForEach-Object { 
+    $_.psobject.properties | ForEach-Object { 
+        $ghKey = $_.Name -replace ':', '__'
+        Write-Host "Syncing $($_.Name) -> $ghKey"
+        gh secret set "nc_hub__$ghKey" --body "$($_.Value)"
+    } 
+}
+```

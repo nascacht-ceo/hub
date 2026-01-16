@@ -1,27 +1,16 @@
-name: CI (Pre-release)
+name: CI Commit
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-pack:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.x'
+  restore:
+    uses: ./.github/workflows/_restore.yaml
+    with:
+      update_packages: false
 
-      - name: Build & Test
-        run: dotnet test --configuration Release
-
-      - name: Pack CI Version
-        # We override the Suffix here. Prefix comes from the .props file.
-        run: >
-          dotnet pack --configuration Release 
-          --no-build 
-          --version-suffix "CI-${{ github.run_number }}" 
-          --output ./nupkg
-
-      - name: Push to NuGet
-        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+  build:
+    needs: restore
+    uses: ./.github/workflows/_build.yaml
+    with:
+      configuration: Debug

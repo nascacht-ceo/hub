@@ -14,8 +14,9 @@ namespace nc.Azure.Tests
         public CloudFileRegression()
         {
             _config = new ConfigurationBuilder()
-                .AddUserSecrets("nc")
-                .AddJsonFile("azure.json")
+                .AddUserSecrets("nc-hub")
+				.AddEnvironmentVariables("nc_hub__")
+				.AddJsonFile("azure.json")
                 .Build();
 
             _blobService = new BlobServiceClient($"DefaultEndpointsProtocol=https;AccountName={_config["Azure:BlobStorage:StorageAccountName"]};AccountKey={_config["Azure:BlobStorage:AccessKey"]};EndpointSuffix=core.windows.net");

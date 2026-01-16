@@ -17,8 +17,9 @@ public class Gemini
 	{
 		Configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
+			.AddEnvironmentVariables("nc_hub__")
 			.Build()
-			.GetSection("tests:nc-ai-tests:gemini");
+			.GetSection("tests:nc_ai_tests:gemini");
 
 		Options = new GeminiClientOptions { ApiKey = Configuration["apikey"]!, ModelId = Configuration["model"] };
 

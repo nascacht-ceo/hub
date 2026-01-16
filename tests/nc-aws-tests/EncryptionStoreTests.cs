@@ -26,6 +26,7 @@ public class EncryptionStoreTests
 
 		var config = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
+			.AddEnvironmentVariables("nc_hub__")
 			.Build()
 			.GetSection("tests:aws");
 

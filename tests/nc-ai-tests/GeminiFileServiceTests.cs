@@ -11,7 +11,10 @@ public class GeminiFileServiceTests
 	[Fact(Skip = "work in progress")]
 	public async Task UploadsFiles()
 	{
-		var config = new ConfigurationBuilder().AddUserSecrets("nc-hub").Build().GetSection("tests:nc-ai-tests:gemini");
+		var config = new ConfigurationBuilder()
+			.AddUserSecrets("nc-hub")
+			.AddEnvironmentVariables("nc_hub__")
+			.Build().GetSection("tests:nc_ai_tests:gemini");
 		// Arrange: configure your real GeminiFileServiceOptions here
 		var options = Options.Create(new GeminiFileServiceOptions
 		{

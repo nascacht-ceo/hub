@@ -63,7 +63,10 @@ public class LicenseServiceFacts
 
 	protected static string GenerateKey(License license)
 	{
-		var config = new ConfigurationBuilder().AddUserSecrets("nc-hub").Build();
+		var config = new ConfigurationBuilder()
+			.AddUserSecrets("nc-hub")
+			.AddEnvironmentVariables("nc_hub__")
+			.Build();
 		using var rsa = RSA.Create();
 		rsa.ImportFromPem(config["nc:license:PrivateKey"]);
 

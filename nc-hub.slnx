@@ -14,10 +14,13 @@
   <Folder Name="/Solution Items/.github/workflows/">
     <File Path=".github/workflows/commit.yaml" />
     <File Path=".github/workflows/tag.yaml" />
+    <File Path=".github/workflows/_build.yaml" />
+    <File Path=".github/workflows/_pack.yaml" />
+    <File Path=".github/workflows/_restore.yaml" />
     <File Path=".github/workflows/_shared.yaml" />
+    <File Path=".github/workflows/_test.yaml" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="nc-mediatr-extensions/nc-mediatr-extensions.csproj" />
     <Project Path="src/nc-ai/nc-ai.csproj" />
     <Project Path="src/nc-api/nc-api.csproj" Id="4ddcfeeb-fe41-4e3d-b1a7-c83909f90f94" />
     <Project Path="src/nc-aws/nc-aws.csproj" />
@@ -42,7 +45,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/nc-ai-tests/nc-ai-tests.csproj" Id="e726980c-9649-40f4-b65c-621d1ade3b5e" />
     <Project Path="tests/nc-aws-tests/nc-aws-tests.csproj" />
-    <Project Path="tests/nc-azure-functions/sample/sample.csproj" />
     <Project Path="tests/nc-azure-tests/nc-azure-tests.csproj" />
     <Project Path="tests/nc-cloud-tests/nc-cloud-tests.csproj" />
     <Project Path="tests/nc-data-tests/nc-data-tests.csproj" />

@@ -15,8 +15,9 @@ public class OpenAI
 	{
 		Configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
+			.AddEnvironmentVariables("nc_hub__")
 			.Build()
-			.GetSection("tests:nc-ai-tests:openai");
+			.GetSection("tests:nc_ai_tests:openai");
 
 		Client = new ChatClient(Configuration["model"], Configuration["secretkey"])
 			.AsIChatClient();
