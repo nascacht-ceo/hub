@@ -9,6 +9,6 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-      run: dotnet test --configuration ${{ inputs.configuration }} --no-build
+      run: dotnet test --configuration ${{ inputs.configuration }} --no-build --logger "GitHubActions"
       env:
         nc_hub__aws__serviceurl: "http://localhost:4566"
