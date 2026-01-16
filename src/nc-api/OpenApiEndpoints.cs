@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
 using nc.OpenApi;
 
 namespace nc.Api;
@@ -33,7 +31,7 @@ public static class OpenApiEndpoints
 		int count = 0;
 		foreach (var endpoint in openApiService.ListEndpoints())
 		{
-			group.MapGet($"{endpoint}", async (HttpContext context) =>
+			group.MapGet($"{endpoint}", async (HttpContext context, CancellationToken token) =>
 			{
 				var accept = context.Request.GetTypedHeaders().Accept;
 				var wantsYaml = accept?.Any(h => h.MediaType.Value?.Contains("yaml", StringComparison.OrdinalIgnoreCase) ?? false) == true;
@@ -44,13 +42,13 @@ public static class OpenApiEndpoints
 				if (wantsYaml)
 				{
 					context.Response.ContentType = "application/yaml";
-					doc.SerializeAsYaml(stream, OpenApiSpecVersion.OpenApi3_0);
+					await doc.SerializeAsync(stream, OpenApiSpecVersion.OpenApi3_0, "yaml", token);
 					await stream.CopyToAsync(context.Response.Body);
 				}
 				else
 				{
 					context.Response.ContentType = "application/json";
-					doc.SerializeAsJson(stream, OpenApiSpecVersion.OpenApi3_0);
+					await doc.SerializeAsync(stream, OpenApiSpecVersion.OpenApi3_0, "json", token);
 					await stream.CopyToAsync(context.Response.Body);
 				}
 				stream.Position = 0;

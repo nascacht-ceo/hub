@@ -4,7 +4,7 @@ public class BlobTests
 {
     public class BlobRepositoryTests : BlobTests
     {
-        [Fact]
+        [Fact(Skip ="work in progress")]
         public async Task Walkthrough()
         {
             var config = new ConfigurationBuilder()

@@ -11,14 +11,15 @@ namespace nc.Aws.Tests;
 /// Integration tests for the EncryptionStore against a running LocalStack environment.
 /// Requires a running LocalStack container with the Secrets Manager service enabled.
 /// </summary>
-public class EncryptionStoreTests : IDisposable
+[Collection((nameof(AmazonFixture)))]
+public class EncryptionStoreTests 
 {
 	private readonly EncryptionStore _store;
 	private readonly EncryptionStoreOptions _options;
 	private readonly IAmazonSecretsManager _secretsManagerClient;
 	private readonly List<string> _keysToCleanup = new List<string>();
 
-	public EncryptionStoreTests()
+	public EncryptionStoreTests(AmazonFixture fixture)
 	{
 		// 1. Setup Options for LocalStack
 		_options = new EncryptionStoreOptions();

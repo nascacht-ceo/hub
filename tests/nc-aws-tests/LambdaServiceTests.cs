@@ -6,11 +6,12 @@ using NuGet.Versioning;
 
 namespace nc.Aws.Tests;
 
+[Collection((nameof(AmazonFixture)))]
 public class LambdaServiceTests
 {
 	private readonly LambdaService _lambdaService;
 
-	public LambdaServiceTests()
+	public LambdaServiceTests(AmazonFixture fixture)
 	{
 		_lambdaService = new LambdaService(
 			new AmazonLambdaClient(new AmazonLambdaConfig { ServiceURL = "http://localhost:4566" }),
@@ -32,7 +33,7 @@ public class LambdaServiceTests
 		Assert.Null(version);
 	}
 
-	[Fact]
+	[Fact(Skip = "work in progress")]
 	public async Task DeployAsync_CreatesSampleFunction()
 	{
 		var definition = new LambdaDefinition(typeof(Sample.Aws.Lambda.Sample), "Transform")

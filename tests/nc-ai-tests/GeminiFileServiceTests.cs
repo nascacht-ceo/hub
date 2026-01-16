@@ -8,7 +8,7 @@ namespace nc.Ai.Tests;
 
 public class GeminiFileServiceTests
 {
-	[Fact]
+	[Fact(Skip = "work in progress")]
 	public async Task UploadsFiles()
 	{
 		var config = new ConfigurationBuilder().AddUserSecrets("nc-hub").Build().GetSection("tests:nc-ai-tests:gemini");

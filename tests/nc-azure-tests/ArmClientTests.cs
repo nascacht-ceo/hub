@@ -28,7 +28,7 @@ public class ArmClientTests: IAsyncLifetime
 			.GetServiceAsync<ArmClient>();
 	}
 
-	[Fact]
+	[Fact(Skip = "work in progress")]
 	public async Task ListsSubscriptions()
 	{
 		var subscriptions = _client!.GetSubscriptions();

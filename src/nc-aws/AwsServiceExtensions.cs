@@ -42,6 +42,14 @@ public static class AwsServiceExtensions
 		services.AddDefaultAWSOptions(section.GetAWSOptions(string.Empty));
 		services.Configure<DynamoStoreOptions>(section.GetSection(nameof(DynamoStoreOptions)));
 		services.Configure<EncryptionStoreOptions>(section.GetSection(nameof(EncryptionStoreOptions)));
+
+		//if (section.GetSection("s3").GetChildren().Any())
+		//{ 
+		//	var s3Config = section.GetSection("s3").Get<AmazonS3Config>();
+		//	services.TryAddAWSService<IAmazonS3>(s3Config, ServiceLifetime.Scoped);
+		//}
+		
+
 		services.AddNascachtAwsServices();
 		return services;
 	}
@@ -72,9 +80,6 @@ public static class AwsServiceExtensions
 		services.AddSingleton<IEncryptionStore, EncryptionStore>();
 		services.AddScoped(typeof(IStore<,>), typeof(DynamoStore<,>));
 		services.AddSingleton<IStorageProvider, S3StorageProvider>();
-		//services.AddSingleton<S3FileService>();
-		//services.AddSingleton<ICloudFileService>(sp => sp.GetRequiredService<S3FileService>());
-		//services.AddKeyedSingleton<ICloudFileService>(ConfigSection, (sp, _) => sp.GetRequiredService<S3FileService>());
 		services.AddSingleton<ICloudFileService, S3FileService>();	
 		return services;
 	}

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using nc.Api;
+﻿using nc.Api;
 using nc.Extensions.DependencyInjection;
 using Scalar.AspNetCore;
 

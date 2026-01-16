@@ -4,7 +4,7 @@ using nc.Cloud;
 
 namespace nc.Aws.Tests;
 
-[Collection("Amazon")]
+[Collection((nameof(AmazonFixture)))]
 public class AmazonTenantManagerTests
 {
 	private readonly AmazonFixture _fixture;

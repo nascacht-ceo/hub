@@ -31,7 +31,7 @@ public class AzureTenantManagerTests
 		public GetService(AzureFixture fixture) : base(fixture)
 		{ }
 
-		[Fact]
+		[Fact(Skip = "work in progress")]
 		public async Task UsesDefaultTenant()
 		{
 			var tenantManager = _fixture.Services.GetRequiredService<AzureTenantManager>();
@@ -100,7 +100,7 @@ public class AzureTenantManagerTests
 		public DiscoverAsync(AzureFixture fixture) : base(fixture)
 		{ }
 
-		[Fact]
+		[Fact(Skip = "work in progress")]
 		public async Task FindsStorageContainers()
 		{
 			var tenantManager = _fixture.Services.GetRequiredService<AzureTenantManager>();

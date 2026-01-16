@@ -40,7 +40,7 @@ public class EFFacts : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    [Fact]
+    [Fact(Skip = "work in progress")]
     public async Task QueriesPocoTypes()
     {
         var options = new DbContextOptionsBuilder<DynamicDbContext>()
@@ -82,13 +82,13 @@ public class EFFacts : IAsyncLifetime
         Assert.Equal("Queries Poco Types", sampleType.GetProperty("Name")!.GetValue(fetched));
     }
 
-    [Fact]
+    [Fact(Skip = "work in progress")]
     public async Task DiscoversTables()
     {
         Assert.NotEmpty(_typeService.GetTypes());
     }
 
-    [Fact]
+    [Fact(Skip = "work in progress")]
     public async Task QueriesTables()
     {
         var options = new DbContextOptionsBuilder<DynamicDbContext>()

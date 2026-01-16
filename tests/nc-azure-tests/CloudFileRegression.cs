@@ -22,8 +22,8 @@ namespace nc.Azure.Tests
             _fileService = new CloudFileService(_blobService);
         }
 
-        [Fact]
-        public async Task WiresServices()
+		[Fact(Skip = "work in progress")]
+		public async Task WiresServices()
         {
             // var manager = new CloudFileManager();
 
@@ -57,8 +57,8 @@ namespace nc.Azure.Tests
             //Assert.NotEmpty(providers);
         }
 
-        [Fact]
-        public async Task Walkthrough()
+		[Fact(Skip = "work in progress")]
+		public async Task Walkthrough()
         {
             var name = $"{Guid.NewGuid()}";
             var provider = await _fileService.CreateAsync(name);

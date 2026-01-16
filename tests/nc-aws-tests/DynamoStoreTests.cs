@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace nc.Aws.Tests;
 
-[Collection("Amazon")]
+[Collection((nameof(AmazonFixture)))]
 public class DynamoStoreTests
 {
 	private readonly AmazonFixture _fixture;

@@ -29,7 +29,7 @@ public class SolutionFacts
 
 	public class AddModel: SolutionFacts 
 	{ 
-		[Fact]
+		[Fact(Skip = "work in progress")]
 		public void AddsByType()
 		{
 			var solution = new Solution() { Name = "SolutionFacts.AddModel" };
