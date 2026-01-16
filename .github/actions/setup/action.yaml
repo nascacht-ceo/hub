@@ -13,14 +13,7 @@ runs:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/global.json', '**/*.csproj') }}
 
-    - name: Update & Restore
+    - name: Restore
       shell: bash
       run: |
-        # 1. Install the tool
-        dotnet tool install --global dotnet-outdated-tool
-        
-        # 2. Update the .csproj files (source change)
-        dotnet outdated -u
-        
-        # 3. Restore based on the UPDATED .csproj files
         dotnet restore
