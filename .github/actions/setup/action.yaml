@@ -26,23 +26,20 @@ runs:
       run: |
         echo "Waiting for LocalStack to be ready..."
         # Increase retries for CI stability
-        MAX_RETRIES=60 
+        MAX_RETRIES=60
         COUNT=0
-        
-        # Simplified check: Just wait for a 200 OK from the health endpoint.
-        # Newer LocalStack versions are ready as soon as the edge proxy returns 200 on /_localstack/health
-        until curl -s --fail http://localhost:4566/_localstack/health > /dev/null || [ $COUNT -eq $MAX_RETRIES ]; do
+        # By using 'while !', bash treats the curl failure as a valid 
+        # result for the loop, preventing 'set -e' from killing the script.
+        while ! curl -s --fail http://localhost:4566/_localstack/health > /dev/null; do
+          if [ $COUNT -eq $MAX_RETRIES ]; then
+            echo "Timed out waiting for LocalStack"
+            docker logs localstack_main
+            exit 1
+          fi
+          echo "Still waiting... ($COUNT/$MAX_RETRIES)"
           sleep 2
           ((COUNT++))
-          echo "Still waiting for Edge Proxy ($COUNT/$MAX_RETRIES)..."
         done
-
-        if [ $COUNT -eq $MAX_RETRIES ]; then 
-          echo "LocalStack Edge Proxy failed to start"
-          docker logs localstack_main
-          exit 1 
-        fi
-        
         echo "LocalStack is ready!"
 
     - name: Nuget cache
