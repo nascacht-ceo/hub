@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GitHubActionsTestLogger" Version="3.0.1" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.11" />
   </ItemGroup>
 
