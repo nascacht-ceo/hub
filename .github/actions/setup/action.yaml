@@ -24,6 +24,9 @@ runs:
     - name: Wait for LocalStack
       shell: bash
       run: |
+        # DISABLE GitHub's "Kill on Error" settings for this step
+        set +e
+        set +o pipefail
         echo "Waiting for LocalStack to be ready..."
         # Increase retries for CI stability
         MAX_RETRIES=60
