@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks.Dataflow;
+﻿using System.Runtime.CompilerServices;
+using System.Threading.Tasks.Dataflow;
 
 public interface IRepository<T> where T : class
 {
@@ -43,7 +44,7 @@ public static class RepositoryExtensions
     {
         return await repository.DeleteAsync(instance, cancellationToken);
     }
-    public static async IAsyncEnumerable<T> SearchAsync<T>(this IRepository<T> repository, IQuery<T> query, CancellationToken cancellationToken = default) where T : class
+    public static async IAsyncEnumerable<T> SearchAsync<T>(this IRepository<T> repository, IQuery<T> query, [EnumeratorCancellation]CancellationToken cancellationToken = default) where T : class
     {
         await foreach (var item in repository.SearchAsync(query, cancellationToken))
         {

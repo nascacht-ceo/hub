@@ -185,6 +185,11 @@ public class DynamoStore<T, TKey> : IStore<T, TKey> where T : class
 		}
 	}
 
+	/// <summary>
+	/// Creates a queryable object for retrieving entities from the store.
+	/// </summary>
+	/// <returns>An <see cref="IStoreQuery{T}"/> instance that can be used to build and execute queries against the store.</returns>
+	/// <exception cref="NotImplementedException">Thrown in this implementation as querying is not supported.</exception>
 	public IStoreQuery<T> Query()
 	{
 		throw new NotImplementedException("Querying is not implemented in this example.");

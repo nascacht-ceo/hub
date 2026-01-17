@@ -31,7 +31,7 @@ public class GeminiClient : DelegatingChatClient
 
 	private async IAsyncEnumerable<ChatMessage> TransformMessagesAsync(
 		IEnumerable<ChatMessage> messages,
-		CancellationToken cancellationToken = default)
+		[EnumeratorCancellation]CancellationToken cancellationToken = default)
 	{
 		var newMessages = new List<ChatMessage>();
 

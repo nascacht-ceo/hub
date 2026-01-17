@@ -17,12 +17,12 @@ public interface IMappingService
 	/// </summary>
 	public class MapAddress
 	{
-		public string StreetName { get; set; }
-		public string HouseNumber { get; set; }
-		public string Municipality { get; set; } // City (vCard city)
-		public string CountrySubdivision { get; set; } // State/Province (vCard region)
-		public string PostalCode { get; set; } // Postal Code (vCard postal-code)
-		public string CountryCode { get; set; } // ISO 3166-1 Alpha-2 (vCard country)
+		public string? StreetName { get; set; }
+		public string? HouseNumber { get; set; }
+		public string? Municipality { get; set; } // City (vCard city)
+		public string? CountrySubdivision { get; set; } // State/Province (vCard region)
+		public string? PostalCode { get; set; } // Postal Code (vCard postal-code)
+		public string? CountryCode { get; set; } // ISO 3166-1 Alpha-2 (vCard country)
 		public bool IsDeliverable { get; set; }
 	}
 
@@ -33,12 +33,12 @@ public interface IMappingService
 	public class MapLocation
 	{
 		/// <summary>The geodetic location represented by the NTS Point (Y=Lat, X=Long).</summary>
-		public Point GeodeticLocation { get; set; }
+		public Point? GeodeticLocation { get; set; }
 
-		public MapAddress Address { get; set; }
-		public string Name { get; set; }
-		public string SourceIdentifier { get; set; } // Provider-specific ID (e.g., PlaceId)
-		public double Confidence { get; set; } // Confidence score/match quality
+		public MapAddress? Address { get; set; }
+		public string? Name { get; set; }
+		public string? SourceIdentifier { get; set; } // Provider-specific ID (e.g., PlaceId)
+		public double? Confidence { get; set; } // Confidence score/match quality
 	}
 
 	/// <summary>
@@ -50,8 +50,8 @@ public interface IMappingService
 		public double DurationInSeconds { get; set; }
 
 		/// <summary>The sequence of NTS Points defining the route geometry.</summary>
-		public IEnumerable<Point> Path { get; set; }
-		public string Summary { get; set; }
+		public IEnumerable<Point> Path { get; set; } = [];
+		public string? Summary { get; set; }
 	}
 
 	/// <summary>
@@ -59,10 +59,10 @@ public interface IMappingService
 	/// </summary>
 	public class MapRouteRequest
 	{
-		public Point Origin { get; set; }
-		public Point Destination { get; set; }
-		public IEnumerable<Point> Waypoints { get; set; }
-		public string TravelMode { get; set; }
+		public Point? Origin { get; set; }
+		public Point? Destination { get; set; }
+		public IEnumerable<Point> Waypoints { get; set; } = [];
+		public string? TravelMode { get; set; }
 	}
 
 	/// <summary>
@@ -71,9 +71,9 @@ public interface IMappingService
 	/// </summary>
 	public class AssetPosition
 	{
-		public string AssetId { get; set; }
-		public Point Position { get; set; }
-		public System.DateTimeOffset Timestamp { get; set; }
+		public string? AssetId { get; set; }
+		public Point? Position { get; set; }
+		public System.DateTimeOffset? Timestamp { get; set; }
 	}
 
 	// --- Core Functionality Methods (structured for batch processing) ---

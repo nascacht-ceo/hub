@@ -104,6 +104,7 @@ public class DynamoStoreOptions : DynamoDBContextConfig
 	/// prefix,  null value handling, and metadata caching mode, based on the current configuration of the class.</remarks>
 	/// <typeparam name="T">The type representing the DynamoDB table entity. This is used to determine the table name and schema.</typeparam>
 	/// <param name="client">The <see cref="IAmazonDynamoDB"/> client used to interact with the DynamoDB service.</param>
+	/// <param name="logger">Optional logger.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the asynchronous operation.</param>
 	/// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="IDynamoDBContext"/>
 	/// instance configured with the specified client and context settings.</returns>
@@ -159,6 +160,22 @@ public class DynamoStoreOptions : DynamoDBContextConfig
         return $"{TableNamePrefix}{type.Name}";
     }
 
+	/// <summary>
+	/// Ensures that a DynamoDB table corresponding to the specified entity type exists and is active, creating it if
+	/// necessary.
+	/// </summary>
+	/// <remarks>If the table does not exist, it is created using the key schema inferred from the entity type
+	/// <typeparamref name="T"/>. The method waits until the table becomes active before completing. If the table already
+	/// exists and is active, no action is taken.</remarks>
+	/// <typeparam name="T">The entity type that defines the schema for the DynamoDB table. The type's properties and key attributes are used
+	/// to determine the table's key schema.</typeparam>
+	/// <param name="client">The Amazon DynamoDB client used to perform table operations.</param>
+	/// <param name="logger">An optional logger used to record informational messages during table creation. May be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+	/// <returns>A task that represents the asynchronous operation. The task completes when the table is confirmed to exist and is
+	/// active.</returns>
+	/// <exception cref="InvalidOperationException">Thrown if no suitable key property is found on the entity type <typeparamref name="T"/>. Ensure that the type has a
+	/// property marked with DynamoDBHashKeyAttribute or DynamoDBRangeKeyAttribute.</exception>
 	public async Task EnsureTableAsync<T>(IAmazonDynamoDB client, Microsoft.Extensions.Logging.ILogger? logger, CancellationToken cancellationToken = default)
 	{
 		TableName = GetTableName<T>();

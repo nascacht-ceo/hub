@@ -11,10 +11,10 @@ public class LogMessage
 	public DateTimeOffset Timestamp { get; } = DateTimeOffset.Now;
 	public LogLevel Level { get; }
 	public string Message { get; }
-	public Exception Exception { get; }
+	public Exception? Exception { get; }
 	public object? ScopeState { get; } // NEW: Stores the current scope state
 
-	public LogMessage(LogLevel level, string message, Exception exception, object? scopeState)
+	public LogMessage(LogLevel level, string message, Exception? exception, object? scopeState)
 	{
 		Level = level;
 		Message = message;
@@ -80,7 +80,7 @@ public class InMemoryLogger : ILogger
 		return true;
 	}
 
-	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 	{
 		if (!IsEnabled(logLevel))
 		{
