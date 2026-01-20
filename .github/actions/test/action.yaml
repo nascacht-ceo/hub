@@ -19,12 +19,6 @@ runs:
 
     - name: Run Dotnet Test
       shell: bash
-      run: |
-        # The environment variables are now loaded into this shell automatically
-        dotnet test --configuration ${{ inputs.configuration }} --no-build \
-          -- \
-          --report-github \
-          --report-github-summary-include-passed true \
-          --report-github-annotations-title "@test"
+      run: dotnet test --configuration ${{ inputs.configuration }} --no-build -- --report-github --report-github-summary-include-passed true
       env:
         nc_hub__aws__serviceurl: "http://localhost:4566"
