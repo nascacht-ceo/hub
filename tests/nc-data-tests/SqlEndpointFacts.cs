@@ -6,17 +6,25 @@ using System.Threading.Tasks;
 
 namespace nc.Data.Tests;
 
+[Collection(nameof(Fixture))]
 public class SqlEndpointFacts
 {
+	private readonly Fixture _fixture;
 	private readonly SqlEndpoint _sqlEndpoint;
 
-	public SqlEndpointFacts()
+	public SqlEndpointFacts(Fixture fixture)
 	{
-		_sqlEndpoint = new SqlEndpoint() { ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AdventureWorks;Trusted_Connection=True;" };
+		_fixture = fixture;
+
+		_sqlEndpoint = new SqlEndpoint() { ConnectionString = _fixture.ConnectionString };
 	}
 
 	public class GetModelsAsync: SqlEndpointFacts
 	{
+		public GetModelsAsync(Fixture fixture) : base(fixture)
+		{
+		}
+
 		[Fact]
 		public async Task FiltersBySchema()
 		{

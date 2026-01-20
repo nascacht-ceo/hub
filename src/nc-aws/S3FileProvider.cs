@@ -3,21 +3,36 @@ using Amazon.S3.Model;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 
+/// <summary>
+/// AWS S3 implementation of ICloudFileProvider.
+/// </summary>
 public class S3FileProvider : ICloudFileProvider
 {
-    public IAmazonS3 S3Client { get; private set; }
+	/// <summary>
+	/// S3 Client used to interact with the S3 service.
+	/// </summary>
+	public IAmazonS3 S3Client { get; private set; }
     private readonly string _bucketName;
     private readonly ILogger? _logger;
 
-    public string Name => _bucketName;
+	/// <summary>
+	/// Bucket name associated with this provider.
+	/// </summary>
+	public string Name => _bucketName;
 
-    public S3FileProvider(IAmazonS3 s3Client, string bucketName, ILogger? logger = null)
+	/// <summary>
+	/// Constructor for S3FileProvider.
+	/// </summary>
+	public S3FileProvider(IAmazonS3 s3Client, string bucketName, ILogger? logger = null)
     {
         S3Client = s3Client;
         _bucketName = bucketName;
         _logger = logger;
     }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public async Task<ICloudFileInfo> GetFileInfoAsync(string filePath, CancellationToken cancellationToken = default)
     {
         if (_bucketName == null)
@@ -52,7 +67,10 @@ public class S3FileProvider : ICloudFileProvider
         }
     }
 
-    public IAsyncEnumerable<ICloudFileInfo> GetDirectoryContentsAsync(string directoryPath, CancellationToken cancellationToken = default)
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public IAsyncEnumerable<ICloudFileInfo> GetDirectoryContentsAsync(string directoryPath, CancellationToken cancellationToken = default)
     {
         if (_bucketName == null)
             throw new ArgumentNullException(nameof(_bucketName), "An S3 bucket name must be set before calling this method.");
@@ -62,7 +80,10 @@ public class S3FileProvider : ICloudFileProvider
         return GetS3ContentsAsync(directoryPath, cancellationToken);
     }
 
-    private async IAsyncEnumerable<ICloudFileInfo> GetS3ContentsAsync(string directoryPath, [EnumeratorCancellation] CancellationToken cancellationToken)
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	private async IAsyncEnumerable<ICloudFileInfo> GetS3ContentsAsync(string directoryPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var listRequest = new ListObjectsV2Request
         {
@@ -93,13 +114,19 @@ public class S3FileProvider : ICloudFileProvider
         } while (listResponse.IsTruncated ?? false);
     }
 
-    public async Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public async Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
     {
         var fileInfo = await GetFileInfoAsync(filePath, cancellationToken);
         return fileInfo.Exists;
     }
 
-    public async Task DeleteAsync(IEnumerable<string> paths, CancellationToken cancellationToken = default)
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public async Task DeleteAsync(IEnumerable<string> paths, CancellationToken cancellationToken = default)
     {
         if (_bucketName == null)
             throw new ArgumentNullException(nameof(_bucketName), "An S3 bucket name must be set before calling this method.");

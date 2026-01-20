@@ -51,6 +51,7 @@
     <Project Path="src/nc-web/nc-web.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <File Path="tests/readme.md" />
     <Project Path="tests/nc-ai-tests/nc-ai-tests.csproj" Id="e726980c-9649-40f4-b65c-621d1ade3b5e" />
     <Project Path="tests/nc-aws-tests/nc-aws-tests.csproj" />
     <Project Path="tests/nc-azure-tests/nc-azure-tests.csproj" />

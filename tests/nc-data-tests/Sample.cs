@@ -1,36 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using nc.Hub;
 using nc.Reflection;
-using NetTopologySuite.Geometries;
-using System.Xml.Linq;
 
 namespace nc.Data.Tests;
 
-public class Sample : IAsyncLifetime
+[Collection(nameof(Fixture))]
+public class Sample
 {
-	private readonly TypeService _typeService;
-	private static readonly string ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AdventureWorks;Trusted_Connection=True;";
+	private readonly Fixture _fixture;
+	private readonly string ConnectionString;
 
-	public Sample()
+	public Sample(Fixture fixture)
 	{
-		_typeService = new TypeService();
+		_fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+		// _typeService = new TypeService();
+		ConnectionString = _fixture.SqlContainer.GetConnectionString();
 	}
 
-	public async Task InitializeAsync()
-	{
-		var sqlReflection = new SqlReflection(ConnectionString);
-		await foreach (var modelDefinition in sqlReflection.DiscoverModels("AdventureWorks", "Person", "%"))
-		{
-			var type = _typeService.GetModel(modelDefinition);
-			Assert.NotNull(type);
-		}
-	}
 
-	public Task DisposeAsync()
-	{
-		return Task.CompletedTask;
-	}
 
 	[Fact(Skip = "work in progress")]
 	public async Task QueriesPocoTypes()
@@ -41,10 +28,10 @@ public class Sample : IAsyncLifetime
 
 		var sampleDefinition = new ModelDefinition<SampleClass>();
 		sampleDefinition.Properties.First(p => p.Name == "Id").IsKey = true;
-		var sampleType = _typeService.GetModel(sampleDefinition);
+		var sampleType = _fixture.TypeService.GetModel(sampleDefinition);
 
 		// Act
-		using (var context = new DynamicDbContext(options, _typeService, [sampleDefinition]))
+		using (var context = new DynamicDbContext(options, _fixture.TypeService, [sampleDefinition]))
 		{
 			context.Database.EnsureCreated();
 
@@ -58,7 +45,7 @@ public class Sample : IAsyncLifetime
 		}
 
 		object? fetched;
-		using (var context = new DynamicDbContext(options, _typeService, [sampleDefinition]))
+		using (var context = new DynamicDbContext(options, _fixture.TypeService, [sampleDefinition]))
 		{
 			var set = (IQueryable)typeof(DbContext)
 				.GetMethod("Set", Type.EmptyTypes)!
@@ -77,7 +64,7 @@ public class Sample : IAsyncLifetime
 	[Fact(Skip = "work in progress")]
 	public async Task DiscoversTables()
 	{
-		Assert.NotEmpty(_typeService.GetTypes());
+		Assert.NotEmpty(_fixture.TypeService.GetTypes());
 	}
 
 	[Fact(Skip = "work in progress")]
@@ -89,9 +76,9 @@ public class Sample : IAsyncLifetime
 
 
 
-		var types = _typeService.GetTypes("AdventureWorks").ToList();
+		var types = _fixture.TypeService.GetTypes("AdventureWorks").ToList();
 		var addressType = types.First(t => t.Name == "Person_Address");
-		using var context = new DynamicDbContext(options, _typeService, _typeService.GetModelDefinitions("AdventureWorks"));
+		using var context = new DynamicDbContext(options, _fixture.TypeService, _fixture.TypeService.GetModelDefinitions("AdventureWorks"));
 
 		var set = (IQueryable)typeof(DbContext)
 			.GetMethod("Set", Type.EmptyTypes)!

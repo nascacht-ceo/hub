@@ -6,6 +6,9 @@ using NuGet.Versioning;
 
 namespace nc.Aws;
 
+/// <summary>
+/// Deploys and manages AWS Lambda functions using the AWS SDK.
+/// </summary>
 public class LambdaService: nc.Cloud.IFunctionService<LambdaService>
 {
 	private readonly IAmazonLambda _lambdaClient;
@@ -20,6 +23,7 @@ public class LambdaService: nc.Cloud.IFunctionService<LambdaService>
 	/// and <see cref="IAmazonS3"/> are provided.</remarks>
 	/// <param name="lambdaClient">An instance of <see cref="IAmazonLambda"/> used to interact with AWS Lambda services.</param>
 	/// <param name="s3Client">An instance of <see cref="IAmazonS3"/> used to interact with AWS S3 services.</param>
+	/// <param name="logger">Optional logger.</param>
 	public LambdaService(IAmazonLambda lambdaClient, IAmazonS3 s3Client, ILogger<LambdaService>? logger = null)
 	{
 		_lambdaClient = lambdaClient;
@@ -280,6 +284,9 @@ public class LambdaService: nc.Cloud.IFunctionService<LambdaService>
 		return null;
 	}
 
+	/// <summary>
+	/// Invokes an AWS Lambda function asynchronously with the specified payload and returns the result stream.
+	/// </summary>
 	public async Task<Stream> InvokeAsync(LambdaDefinition definition, MemoryStream payload)
 	{
 		// 1. Create the InvokeRequest
@@ -309,6 +316,9 @@ public class LambdaService: nc.Cloud.IFunctionService<LambdaService>
 		return response.Payload;
 	}
 
+	/// <summary>
+	/// Creates or updates an alias for the specified Lambda function version.
+	/// </summary>
 	public async Task AliasAsync(LambdaDefinition definition, string? revisionId = null, string? alias = null)
 	{
 		alias ??= definition.Version.ToString().Replace(".", "_");

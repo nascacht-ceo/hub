@@ -1,19 +1,57 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 
+/// <summary>
+/// AWS S3 implementation of ICloudFileInfo.
+/// </summary>
 public class S3FileInfo : ICloudFileInfo
 {
     private readonly S3FileProvider _provider;
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     public string Name { get; set; }
-    public string Path { get; set; }
-    public bool Exists { get; set; }
-    public long Length { get; set; }
-    public string? ContentType { get; set; }
-    public DateTimeOffset? LastModified { get; set; }
-    public bool IsDirectory { get; set; }
-    public string? ETag { get; private set; }
-    public IDictionary<string, string?> Metadata { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public string Path { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public bool Exists { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public long Length { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public string? ContentType { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public DateTimeOffset? LastModified { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public bool IsDirectory { get; set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public string? ETag { get; private set; }
+
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
+	public IDictionary<string, string?> Metadata { get; set; }
 
     /// <summary>
     /// Constructor for existing files or directories.

@@ -7,16 +7,26 @@ using System.Threading.Tasks;
 
 namespace nc.Data.Tests;
 
+
 public class SolutionFacts
 {
+	[Collection(nameof(Fixture))]
 	public class Walkthrough
 	{
+		private readonly Fixture _fixture;
+
+		public Walkthrough(Fixture fixture)
+		{
+			_fixture = fixture;
+		}
+
+
 		[Fact]
 		public async Task WalksThroughSolution()
 		{
 			// Create a solution, and add the AventureWorks database endpoint.
 			var solution = new Solution() { Name = "Data.Walkthrough" };
-			solution.AddDatabase("AdventureWorks", "Server=(localdb)\\mssqllocaldb;Database=AdventureWorks;Trusted_Connection=True;");
+			solution.AddDatabase("AdventureWorks", _fixture.ConnectionString);
 
 			// Explore the models available in the database endpoint.
 			var endpoint = solution.GetEndpoint<DatabaseEndpoint>("AdventureWorks");

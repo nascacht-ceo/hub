@@ -30,6 +30,16 @@ public class Gemini
 	}
 
 	[Fact]
+	public void EnvironmentVariablesTranslated()
+	{
+		Environment.SetEnvironmentVariable("nc_hub__tests__compound__key", "value");
+		Environment.SetEnvironmentVariable("NC_HUB__TESTS__NC_AI_TESTS__GEMINI__APIKEY", "dummy");
+		var config = new ConfigurationBuilder().AddEnvironmentVariables("nc_hub__").Build();
+		var section = config.GetSection("tests");
+		Assert.Equal("value", section["compound:key"]);
+		Assert.Equal("dummy", section["nc_ai_tests:gemini:apikey"]);
+	}
+	[Fact]
 	public async Task Sample()
 	{
 		var response = await Client.GetResponseAsync("What is AI?");
