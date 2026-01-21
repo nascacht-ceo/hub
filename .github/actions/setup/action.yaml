@@ -51,13 +51,6 @@ runs:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/global.json', '**/*.csproj') }}
 
-    - name: Inject All Secrets
-      shell: bash
-      # This pulls all secrets into the current job's environment
-      # so your .NET code can see them as Environment Variables.
-      run: |
-        echo '${{ toJSON(secrets) }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
-
     - name: Restore
       shell: bash
       run: |
