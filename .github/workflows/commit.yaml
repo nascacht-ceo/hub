@@ -15,8 +15,24 @@ jobs:
       - name: Export Secrets and Vars to Env
         shell: bash
         run: |
-          echo '${{ toJSON(secrets) }}' | jq -r 'to_entries[] | "\(.key | ascii_downcase)<<EOF\n\(.value)\nEOF"' >> "$GITHUB_ENV"
-          echo '${{ toJSON(vars) }}' | jq -r 'to_entries[] | "\(.key | ascii_downcase)<<EOF\n\(.value)\nEOF"' >> "$GITHUB_ENV"
+          echo '${{ toJSON(secrets) }}' | jq -c 'to_entries[]' | while read -r item; do
+            key=$(echo "$item" | jq -r '.key | ascii_downcase')
+            value=$(echo "$item" | jq -r '.value')
+            {
+              echo "${key}<<EOF"
+              echo "$value"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+          done
+          echo '${{ toJSON(vars) }}' | jq -c 'to_entries[]' | while read -r item; do
+            key=$(echo "$item" | jq -r '.key | ascii_downcase')
+            value=$(echo "$item" | jq -r '.value')
+            {
+              echo "${key}<<EOF"
+              echo "$value"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+          done
 
       - name: Build Debug
         uses: ./.github/actions/build
