@@ -8,15 +8,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Export Secrets and Vars
-      shell: bash
-      run: |
-        # Export Secrets (convert keys to lowercase to match nc_hub__ prefix logic)
-        echo '${{ toJSON(secrets) }}' | jq -r 'to_entries[] | "export \(.key | ascii_downcase)=\(.value | @sh)"' >> "$GITHUB_ENV"
-        
-        # Export Variables (convert keys to lowercase)
-        echo '${{ toJSON(vars) }}' | jq -r 'to_entries[] | "export \(.key | ascii_downcase)=\(.value | @sh)"' >> "$GITHUB_ENV"
-
     - name: Run Dotnet Test
       shell: bash
       run: dotnet test --configuration ${{ inputs.configuration }} --no-build -- --report-github --report-github-summary-include-passed true

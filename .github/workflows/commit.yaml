@@ -11,7 +11,13 @@ jobs:
       
       - name: Setup & Restore
         uses: ./.github/actions/setup
-        
+
+      - name: Export Secrets and Vars to Env
+        shell: bash
+        run: |
+          echo '${{ toJSON(secrets) }}' | jq -r 'to_entries[] | "\(.key | ascii_downcase)=\(.value)"' >> "$GITHUB_ENV"
+          echo '${{ toJSON(vars) }}' | jq -r 'to_entries[] | "\(.key | ascii_downcase)=\(.value)"' >> "$GITHUB_ENV"
+
       - name: Build Debug
         uses: ./.github/actions/build
         with:
