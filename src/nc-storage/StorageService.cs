@@ -140,7 +140,10 @@ public class StorageService
 	{
 		var uri = ToUri(url);
 		using var blobStorage = GetBlobStorage(uri);
-		return await blobStorage.OpenReadAsync(StoragePath.Normalize(uri.AbsolutePath), cancellationToken);
+		var stream = await blobStorage.OpenReadAsync(StoragePath.Normalize(uri.AbsolutePath), cancellationToken);
+		if (stream == null)
+			throw new ArgumentOutOfRangeException(nameof(url), url);
+		return stream;
 	}
 
 	public async Task DeleteAsync(IEnumerable<string> urls, CancellationToken cancellationToken = default)

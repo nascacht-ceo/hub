@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
@@ -125,9 +126,11 @@ public class OpenApiService
         using var client = _httpClientFactory.CreateClient(_options.HttpClientName);
         try
         {
-            var stream = await client.GetStreamAsync(location);
-
-            var (document, diagnostic) = await OpenApiDocument.LoadAsync(stream);
+            using var stream = await client.GetStreamAsync(location);
+			using var ms = new MemoryStream();
+			await stream.CopyToAsync(ms);
+            ms.Position = 0;
+			var (document, diagnostic) = await OpenApiDocument.LoadAsync(ms, cancellationToken: cancellationToken);
 			if (diagnostic?.Errors.Count > 0)
             {
                 foreach (var error in diagnostic.Errors)

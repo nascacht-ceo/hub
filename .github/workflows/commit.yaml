@@ -24,6 +24,13 @@ jobs:
           role-to-assume: arn:aws:iam::067752552981:role/github-actions-role
           aws-region: us-east-1
 
+      - name: Authenticate to Azure
+        uses: azure/login@v2
+        with:
+          client-id: 74489200-76e9-47ab-a895-8de67b56c64e
+          tenant-id: efd9003e-a958-4355-8f3b-1a8730f8769f
+          subscription-id: 200a04a0-23e0-4937-8d5d-05daa4ea9d81
+
       - name: Setup & Restore
         uses: ./.github/actions/setup
 

@@ -55,7 +55,9 @@ public class OpenApiServiceFacts
         Assert.NotNull(result);
 
         var response = result as Ok<HttpResponseMessage>;
-        using var reader = new StreamReader(response.Value.Content.ReadAsStream());
+        if (response?.Value == null)
+            Assert.Fail($"Result was {result.GetType()}, instead of Ok<HttpResponseMessage>.");
+		using var reader = new StreamReader(response.Value.Content.ReadAsStream());
         var json = await reader.ReadToEndAsync();
         Assert.NotEmpty(json);
     }

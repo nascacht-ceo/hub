@@ -135,3 +135,32 @@ Step 5: Use in workflow
   with:
     role-to-assume: arn:aws:iam::YOUR_ACCOUNT_ID:role/github-actions-role
     aws-region: us-east-1
+
+## Azure
+
+Step 1: Create App Registration
+
+az ad app create --display-name "github-actions-app"
+
+Copy the appId from the output for the next steps.
+
+Step 2: Create Service Principal
+
+az ad sp create --id "74489200-76e9-47ab-a895-8de67b56c64e"
+
+Step 3: Add Federated Credential
+
+az ad app federated-credential create --id "74489200-76e9-47ab-a895-8de67b56c64e" --parameters "./azure.credential.config"
+
+Step 4: Grant Contributor role
+
+az role assignment create --assignee "74489200-76e9-47ab-a895-8de67b56c64e" --role Contributor --scope /subscriptions/200a04a0-23e0-4937-8d5d-05daa4ea9d81
+
+Step 5: Workflow step (I'll add this to commit.yaml)
+
+- name: Authenticate to Azure
+  uses: azure/login@v2
+  with:
+    client-id: YOUR_APP_ID
+    tenant-id: efd9003e-a958-4355-8f3b-1a8730f8769f
+    subscription-id: 200a04a0-23e0-4937-8d5d-05daa4ea9d81

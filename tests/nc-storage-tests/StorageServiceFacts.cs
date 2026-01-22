@@ -103,8 +103,7 @@ public class StorageServiceFacts
 		[InlineData("aws.s3://nascacht-io-invalid/invalid.xxx")]
 		public async Task HandlesInvalidUri(string url)
 		{
-			using var stream = await _storageService.OpenReadAsync(url);
-			Assert.Null(stream);
+			await Assert.ThrowsAnyAsync<Exception>(async () => await _storageService.OpenReadAsync(url));
 		}
 	}
 
