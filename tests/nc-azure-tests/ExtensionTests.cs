@@ -17,7 +17,7 @@ public class ExtensionTests
 		[Fact(Skip = "work in progress")]
 		public void AddsAzureServiceOptionsFromConfig()
         {
-            var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
+            var config = new ConfigurationBuilder().AddUserSecrets("nc-hub").AddEnvironmentVariables("nc_hub__").Build();
             var services = new ServiceCollection().AddNascachtAzureServices(config.GetSection("Azure")).BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AzureServiceOptions>>();
             Assert.NotNull(options);
@@ -26,7 +26,7 @@ public class ExtensionTests
 		[Fact(Skip = "work in progress")]
 		public void AddsConfigureManagerOptions()
         {
-            var config = new ConfigurationBuilder().AddJsonFile("azure.json").Build();
+            var config = new ConfigurationBuilder().AddUserSecrets("nc-hub").AddEnvironmentVariables("nc_hub__").Build();
             var services = new ServiceCollection().AddNascachtAzureServices(config.GetSection("Azure")).BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<CloudFileManagerOptions>>();
             Assert.NotNull(options);

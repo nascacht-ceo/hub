@@ -4,6 +4,7 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
+    <File Path="aws-trust-policy.json" />
     <File Path="coding.md" />
     <File Path="Directory.Build.props" />
     <File Path="LICENSE.md" />

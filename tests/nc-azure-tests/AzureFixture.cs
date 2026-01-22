@@ -16,8 +16,10 @@ public class AzureFixture: ITestFixture
     public AzureFixture()
     {
         Configuration = new ConfigurationBuilder()
-            .AddJsonFile("artifacts/azure.json")
+            // .AddJsonFile("artifacts/azure.json")
             .AddJsonFile("appsettings.json")
+            .AddUserSecrets("nc-hub")
+            .AddEnvironmentVariables("nc_hub__")
 			.Build();
         Services = new ServiceCollection()
             .AddLogging(lb => lb.AddInMemoryLogger())

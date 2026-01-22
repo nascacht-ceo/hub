@@ -16,7 +16,7 @@ namespace nc.Azure.Tests
             _config = new ConfigurationBuilder()
                 .AddUserSecrets("nc-hub")
 				.AddEnvironmentVariables("nc_hub__")
-				.AddJsonFile("azure.json")
+				// .AddJsonFile("azure.json")
                 .Build();
 
             _blobService = new BlobServiceClient($"DefaultEndpointsProtocol=https;AccountName={_config["Azure:BlobStorage:StorageAccountName"]};AccountKey={_config["Azure:BlobStorage:AccessKey"]};EndpointSuffix=core.windows.net");
@@ -29,8 +29,10 @@ namespace nc.Azure.Tests
             // var manager = new CloudFileManager();
 
             var config = new ConfigurationBuilder()
-                .AddJsonFile("azure.json")
-                .Build();
+                // .AddJsonFile("azure.json")
+			    .AddUserSecrets("nc-hub")
+			    .AddEnvironmentVariables("nc_hub__")
+				.Build();
 
             var options = new AzureServiceOptions();
             config.Bind(options);

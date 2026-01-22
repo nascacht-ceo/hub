@@ -9,8 +9,10 @@ public class CalendarTests
         public async Task Walkthrough()
         {
             var config = new ConfigurationBuilder()
-                .AddJsonFile("artifacts/azure.json")
-                .Build();
+                // .AddJsonFile("artifacts/azure.json")
+			    .AddUserSecrets("nc-hub")
+			    .AddEnvironmentVariables("nc_hub__")
+				.Build();
             var options = new AzureServiceOptions();
             config.GetSection("Azure").Bind(options);
             Assert.NotNull(options.CalendarSources);
