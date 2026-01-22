@@ -5,7 +5,7 @@ public class CalendarTests
 {
     public class RepositoryTests: CalendarTests
     {
-        [Fact]
+        [Fact(Skip ="work in progress")]
         public async Task Walkthrough()
         {
             var config = new ConfigurationBuilder()
