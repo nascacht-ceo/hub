@@ -6,7 +6,8 @@ using Xunit;
 
 namespace nc.Extensions.Stream.Tests;
 
-public class StreamExtensionsFacts: IClassFixture<StreamExtensionsFixture>
+[Collection(nameof(StreamExtensionsFixture))]
+public class StreamExtensionsFacts
 {
 	protected readonly StreamExtensionsFixture _fixture;
 
@@ -175,3 +176,7 @@ public class StreamExtensionsFixture: IAsyncLifetime
 		return Task.CompletedTask;
 	}
 }
+
+[CollectionDefinition(nameof(StreamExtensionsFixture))]
+public class StreamExtensionsFixtureCollection: IClassFixture<StreamExtensionsFixture>
+{ }

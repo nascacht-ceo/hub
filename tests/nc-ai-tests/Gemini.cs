@@ -29,7 +29,7 @@ public class Gemini
 		//	.AsIChatClient();
 	}
 
-	[Fact]
+	[Fact(Skip = "local testing only.")]
 	public void EnvironmentVariablesTranslated()
 	{
 		Environment.SetEnvironmentVariable("nc_hub__tests__compound__key", "value");
