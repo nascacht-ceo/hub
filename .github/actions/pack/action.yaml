@@ -9,6 +9,9 @@ inputs:
   version_suffix:
     description: 'Optional suffix for prerelease versions (e.g., ci-123)'
     required: false
+  nuget_user:
+    description: 'NuGet.org username for Trusted Publishing'
+    required: true
 
 runs:
   using: "composite"
@@ -22,6 +25,8 @@ runs:
     - name: Get NuGet OIDC token
       id: nuget-login
       uses: NuGet/login@v1
+      with:
+        user: ${{ inputs.nuget_user }}
 
     - name: Push to NuGet.org
       shell: bash

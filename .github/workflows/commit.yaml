@@ -71,3 +71,4 @@ jobs:
         with:
           configuration: Debug
           version_suffix: ci-${{ github.run_number }}
+          nuget_user: ${{ vars.NUGET_USER }}
