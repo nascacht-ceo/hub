@@ -16,17 +16,17 @@ runs:
     - name: Pack NuGet Package
       shell: bash
       run: |
-        dotnet pack --configuration ${{ inputs.configuration }} -o ./dist \
+        dotnet pack --configuration ${{ inputs.configuration }} --no-build -o ./dist \
         ${{ inputs.version_suffix && format('--version-suffix {0}', inputs.version_suffix) || '' }}
 
     - name: Get NuGet OIDC token
-      id: nuget-token
-      uses: nuget/nuget-oidc-login@v1
+      id: nuget-login
+      uses: NuGet/login@v1
 
     - name: Push to NuGet.org
       shell: bash
       run: |
         dotnet nuget push "./dist/*.nupkg" \
-          --api-key ${{ steps.nuget-token.outputs.token }} \
+          --api-key ${{ steps.nuget-login.outputs.api-key }} \
           --source https://api.nuget.org/v3/index.json \
           --skip-duplicate
