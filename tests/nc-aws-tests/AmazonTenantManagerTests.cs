@@ -25,7 +25,7 @@ public class AmazonTenantManagerTests
 			var tenantManager = _fixture.Services.GetRequiredService<AmazonTenantManager>();
 			var s3Client = await tenantManager.GetServiceAsync<IAmazonS3>();
 			Assert.NotNull(s3Client);
-			Assert.Equal(_fixture.Configuration["aws:serviceurl"], s3Client.Config.ServiceURL);
+			Assert.Equal(_fixture.ServiceUrl, s3Client.Config.ServiceURL);
 		}
 
 		[Fact]

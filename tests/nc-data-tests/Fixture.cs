@@ -18,7 +18,7 @@ public class Fixture : IAsyncLifetime
 
 	public MsSqlContainer SqlContainer { get; }
 	public TypeService TypeService { get; }
-	public string ConnectionString { get; private set; }
+	public string? ConnectionString { get; private set; }
 
 	public Task DisposeAsync()
 	{

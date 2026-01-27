@@ -88,6 +88,27 @@ steps:
       workload_identity_provider: projects/967035478217/locations/global/workloadIdentityPools/github-pool/providers/github-provider
       service_account: github-actions-sa@seventh-seeker-476512-r1.iam.gserviceaccount.com
 
+### Integrations test account:
+
+```pwsh
+$SA = "integration-tests"
+$PROJECT = "seventh-seeker-476512-r1"
+
+# Create the service account
+gcloud iam service-accounts create $SA --project=$PROJECT --display-name=$SA
+
+# Storage: read/write/delete on your bucket
+gsutil iam ch "serviceAccount:${SA}@${PROJECT}.iam.gserviceaccount.com:roles/storage.objectAdmin" gs://nascacht-ai-tests
+
+# Vision API
+gcloud services enable vision.googleapis.com --project=$PROJECT   
+gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:${SA}@${PROJECT}.iam.gserviceaccount.com" --role="roles/documentai.apiUser"
+
+# Vertex AI (Gemini)
+gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:${SA}@${PROJECT}.iam.gserviceaccount.com" --role="roles/aiplatform.user"
+```
+
+
 ## AWS
 
 aws sts get-caller-identity --query Account --output text --profile nc

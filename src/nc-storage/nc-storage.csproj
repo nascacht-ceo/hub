@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\nc-google\nc-google.csproj" />
     <ProjectReference Include="..\nc-scaling\nc-scaling.csproj" />
   </ItemGroup>
 

@@ -94,8 +94,8 @@ public class StorageService
 			case "google.storage":
 				if (connectionString.Contains("cred"))
 					return StorageFactory.Blobs.FromConnectionString(connectionString);
-				else 
-					return StorageFactory.Blobs.GoogleCloudStorageFromEnvironmentVariable(uri.Host);
+				// Unauthenticated access for public buckets
+				return StorageFactory.Blobs.GoogleCloudStorageFromEnvironmentVariable(uri.Host);
 			default:
 				return StorageFactory.Blobs.FromConnectionString(connectionString);
 		}
@@ -226,37 +226,50 @@ public class StorageService
 		// 1. Group by storage target (Scheme + Host)
 		var groups = urls
 			.Select(p => ToUri(p))
-			.GroupBy(uri => $"{uri.Scheme}://{uri.Host}");
+			.GroupBy(uri => $"{uri.Scheme}://{uri.Host}")
+			.ToList();
 
 		// 2. Create an unbounded channel to collect results from all parallel tasks
 		var channel = Channel.CreateUnbounded<Blob>();
+		var exceptions = new System.Collections.Concurrent.ConcurrentBag<Exception>();
 
 		// 3. Fire off the parallel processing
-		var backgroundTask = Parallel.ForEachAsync(groups, cancellationToken, async (group, token) =>
+		var backgroundTask = Task.Run(async () =>
 		{
 			try
 			{
-				var uri = ToUri(group.Key);
-				using var storage = GetBlobStorage(uri);
-				var relativePaths = group.Select(uri => StoragePath.Normalize(uri.AbsolutePath)).ToArray();
-
-				// Fetch metadata in bulk for this specific provider
-				var blobs = await storage.GetBlobsAsync(relativePaths, token);
-
-				foreach (var blob in blobs)
+				await Parallel.ForEachAsync(groups, cancellationToken, async (group, token) =>
 				{
-					blob.Uri = $"{uri.Scheme}://{uri.Host}/{blob.FullPath}";
-					// Write each blob to the channel as soon as it's ready
-					await channel.Writer.WriteAsync(blob, token);
-				}
+					try
+					{
+						var uri = ToUri(group.Key);
+						using var storage = GetBlobStorage(uri);
+						var relativePaths = group.Select(uri => StoragePath.Normalize(uri.AbsolutePath)).ToArray();
+
+						// Fetch metadata in bulk for this specific provider
+						var blobs = await storage.GetBlobsAsync(relativePaths, token);
+
+						foreach (var blob in blobs)
+						{
+							blob.Uri = $"{uri.Scheme}://{uri.Host}/{blob.FullPath}";
+							// Write each blob to the channel as soon as it's ready
+							await channel.Writer.WriteAsync(blob, token);
+						}
+					}
+					catch (Exception ex)
+					{
+						_logger?.LogError(ex, "Error fetching blobs from storage provider for group {GroupKey}", group.Key);
+						exceptions.Add(ex);
+						if (_options.ThrowTPLErrors)
+							throw;
+					}
+				});
 			}
-			catch (Exception ex)
+			finally
 			{
-				_logger?.LogError(ex, "Error fetching blobs from storage provider for group {GroupKey}", group.Key);
-				// Optional: Log or handle partial failures here
-				// Note: Parallel.ForEachAsync will propagate exceptions when the task is awaited
+				channel.Writer.Complete();
 			}
-		}).ContinueWith(_ => channel.Writer.Complete(), cancellationToken); // Close channel when all groups finish
+		}, cancellationToken);
 
 		// 4. Yield items from the channel reader as they arrive
 		await foreach (var blob in channel.Reader.ReadAllAsync(cancellationToken))
@@ -264,8 +277,19 @@ public class StorageService
 			yield return blob;
 		}
 
-		// 5. Ensure any exceptions from the background processing are thrown
-		await backgroundTask;
+		// 5. Await background task and handle exceptions
+		try
+		{
+			await backgroundTask;
+		}
+		catch (AggregateException ae) when (_options.ThrowTPLErrors)
+		{
+			throw new AggregateException("One or more errors occurred while fetching blobs.", ae.Flatten().InnerExceptions);
+		}
+
+		// 6. If we collected exceptions but didn't throw during processing, throw them now
+		if (_options.ThrowTPLErrors && !exceptions.IsEmpty)
+			throw new AggregateException("One or more errors occurred while fetching blobs.", exceptions);
 	}
 
 	public async Task SetBlobsAsync(IEnumerable<Blob> blobs, CancellationToken cancellationToken = default)

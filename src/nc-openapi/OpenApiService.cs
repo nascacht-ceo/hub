@@ -138,6 +138,8 @@ public class OpenApiService
 
                 throw new InvalidOperationException(_localizer[nameof(Resources.Errors.OpenApiSpecNotRegistered), specification.SpecUrl!]);
             }
+            if (document == null)
+                throw new InvalidOperationException($"Unable to fetch document from {specification.SpecUrl}");
             await _cache.SetStringAsync(
                 $"{_options.CacheKey}:{name}", 
                 OpenApiDocumentToJson(document), 
@@ -192,6 +194,8 @@ public class OpenApiService
     /// endpoint is found, or a 500 Internal Server Error result if the target endpoint's base URL is invalid.</returns>
     public async Task<IResult> ProxyRequestAsync(HttpRequest request)
     {
+        if (request.Path.Value == null)
+            throw new ArgumentOutOfRangeException(nameof(request.Path));
         string path = request.Path.Value;
         var pathSegments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
 

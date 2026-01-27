@@ -35,7 +35,7 @@ public class EncryptionStoreTests
 		// Credentials are dummy since LocalStack accepts any valid credentials.
 		var clientConfig = new AmazonSecretsManagerConfig
 		{
-			ServiceURL = config["localstackurl"],
+			ServiceURL = fixture.ServiceUrl,
 			AuthenticationRegion = "us-east-1" // Must use a region that LocalStack recognizes
 		};
 

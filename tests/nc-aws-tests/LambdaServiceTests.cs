@@ -14,8 +14,8 @@ public class LambdaServiceTests
 	public LambdaServiceTests(AmazonFixture fixture)
 	{
 		_lambdaService = new LambdaService(
-			new AmazonLambdaClient(new AmazonLambdaConfig { ServiceURL = "http://localhost:4566" }),
-			new AmazonS3Client(new AmazonS3Config { ServiceURL = "http://localhost:4566", ForcePathStyle = true }),
+			new AmazonLambdaClient(new AmazonLambdaConfig { ServiceURL = fixture.ServiceUrl }),
+			new AmazonS3Client(new AmazonS3Config { ServiceURL = fixture.ServiceUrl, ForcePathStyle = true }),
 			LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace)).CreateLogger<LambdaService>()
 		);
 	}

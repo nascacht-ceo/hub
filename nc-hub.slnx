@@ -39,6 +39,7 @@
     <Project Path="src/nc-extensions-streaming/nc-extensions-streaming.csproj" Id="7cb375c3-b71f-48ed-9b16-366b74b776d1" />
     <Project Path="src/nc-extensions/nc-extensions.csproj" />
     <Project Path="src/nc-gcp/nc-gcp.csproj" />
+    <Project Path="src/nc-google/nc-google.csproj" Id="4bc4b44b-1e84-483a-9f3e-f9800bad54ec" />
     <Project Path="src/nc-hub/nc-hub.csproj" />
     <Project Path="src/nc-license/nc-license.csproj" Id="34507f70-91f9-4e46-82dc-26537fc4e31a" />
     <Project Path="src/nc-models/nc-models.csproj" Id="c2a2de17-5ecf-45a1-9871-8297cc27fd28" />
@@ -60,6 +61,7 @@
     <Project Path="tests/nc-extensions-stream-tests/nc-extensions-stream-tests.csproj" Id="a4202655-7edf-45df-88d4-5b9571fae306" />
     <Project Path="tests/nc-extensions-tests/nc-extensions-tests.csproj" />
     <Project Path="tests/nc-extenstions-logging-tests/nc-extenstions-logging-tests.csproj" Id="9aad78c1-ef7b-45ad-a9db-0743563de20c" />
+    <Project Path="tests/nc-google-tests/nc-google-tests.csproj" Id="90acf0f2-63f1-4794-80ef-fb96e15667d2" />
     <Project Path="tests/nc-graphql-sample/nc-graphql-sample.csproj" />
     <Project Path="tests/nc-hub-tests/nc-hub-tests.csproj" />
     <Project Path="tests/nc-license-tests/nc-license-tests.csproj" Id="7485af12-ce02-411e-ae0c-7bcd241d86af" />

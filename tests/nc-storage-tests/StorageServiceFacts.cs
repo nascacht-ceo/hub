@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model;
 using FluentStorage.Blobs;
+using nc.Google;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -24,7 +25,7 @@ public class StorageServiceFacts
 
 		_storageServiceOptions
 			.GcpIdentities
-			.Add("secure", new GcpServiceAccount() { ProjectId = "secure", PrivateKey = "Fake", ClientEmail = "me@gmail.com" });
+			.Add("secure", new GoogleTenant() { Name = "secure", TenantId = "secure", ProjectId = "secure", PrivateKey = "Fake", ClientEmail = "me@gmail.com" });
 		_storageService = new StorageService(_storageServiceOptions);
 	}
 
@@ -61,7 +62,7 @@ public class StorageServiceFacts
 
 		[Theory]
 		[InlineData("aws.s3://secure/bucket/file.txt", "aws.s3://key=awsUser;secret=awsPassword;region=us-south-2;bucket=secure")]
-		[InlineData("google.gcp://secure/bucket/file.txt", "google.storage://project=secure;cred=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50IiwicHJvamVjdF9pZCI6InNlY3VyZSIsInByaXZhdGVfa2V5X2lkIjpudWxsLCJwcml2YXRlX2tleSI6IkZha2UiLCJjbGllbnRfZW1haWwiOiJtZUBnbWFpbC5jb20iLCJjbGllbnRfaWQiOm51bGwsImF1dGhfdXJpIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLCJ0b2tlbl91cmkiOiJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6Imh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsImNsaWVudF94NTA5X2NlcnRfdXJsIjpudWxsfQ==")]
+		[InlineData("google.gcp://secure/bucket/file.txt", "google.storage://project=secure;cred=eyJUZW5hbnRJZCI6InNlY3VyZSIsIk5hbWUiOiJzZWN1cmUiLCJ0eXBlIjoic2VydmljZV9hY2NvdW50IiwicHJvamVjdF9pZCI6InNlY3VyZSIsInByaXZhdGVfa2V5IjoiRmFrZSIsImNsaWVudF9lbWFpbCI6Im1lQGdtYWlsLmNvbSIsImF1dGhfdXJpIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLCJ0b2tlbl91cmkiOiJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6Imh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyJ9")]
 		public void InjectsCredential(string url, string expected)
 		{
 			var uri = new Uri(url);

@@ -1,11 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using nc.Cloud;
 using nc.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace nc.Aws.Tests;
 
