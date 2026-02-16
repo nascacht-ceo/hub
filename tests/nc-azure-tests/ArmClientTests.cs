@@ -1,6 +1,7 @@
 ﻿using Azure.ResourceManager;
 using Azure.ResourceManager.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using nc.Cloud;
 
 namespace nc.Azure.Tests;
 
@@ -20,12 +21,11 @@ public class ArmClientTests: IAsyncLifetime
 		return Task.CompletedTask;
 	}
 
-	public async Task InitializeAsync()
+	public Task InitializeAsync()
 	{
-		_client = await _fixture
-			.Services
-			.GetRequiredService<AzureTenantManager>()
-			.GetServiceAsync<ArmClient>();
+
+		_client = new AzureTenant().GetService<ArmClient>();
+		return Task.CompletedTask;
 	}
 
 	[Fact(Skip = "work in progress")]

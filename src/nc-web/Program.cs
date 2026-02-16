@@ -11,7 +11,7 @@ builder.WebHost.UseUrls("http://localhost:5000");
 var section = builder.Configuration.GetSection("nc");
 
 // 3. SERVICES REGISTRATION
-builder.Services.AddNascachtAwsServices(section);
+builder.Services.AddNascachtAmazonServices(section);
 builder.Services.AddNascachtOpenApiService(section);
 // builder.Services.AddNascachtAzureServices(section); 
 // builder.Services.AddNascachtGcpServices(section);

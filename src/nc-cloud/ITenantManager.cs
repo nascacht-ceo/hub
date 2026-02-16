@@ -4,7 +4,7 @@ namespace nc.Cloud;
 
 public interface ITenantManager
 {
-	public IServiceProvider Services { get; }
+	public ITenant GetTenant(string tenantName);
 }
 
 /// <summary>
@@ -12,9 +12,16 @@ public interface ITenantManager
 /// </summary>
 /// <typeparam name="TTenant">Type of ITenant to be managed.</typeparam>
 /// <typeparam name="TService">Type of services to be created.</typeparam>
-public interface ITenantManager<TTenant> where TTenant: ITenant
+public interface ITenantManager<TTenant>: ITenantManager where TTenant: ITenant
 {
 	public ValueTask<TTenant> AddTenantAsync(TTenant tenant);
 
 	public Task RemoveTenantAsync(string tenantName);
+
+	public new TTenant GetTenant(string tenantName);
+
+	ITenant ITenantManager.GetTenant(string tenantName)
+	{
+		return GetTenant(tenantName);
+	}
 }

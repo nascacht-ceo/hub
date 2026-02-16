@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(findstr:*)",
+      "Bash(dotnet ildasm:*)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:deepwiki.com)",
+      "Bash(del \"tests\\\\nc-ai-tests\\\\CachedChatClientTests.cs\")",
+      "Bash(del \"tests\\\\nc-ai-tests\\\\GeminiCachedChatClientTests.cs\")",
+      "Bash(del \"tests\\\\nc-ai-tests\\\\GeminiFileServiceTests.cs\")"
+    ]
+  }
+}

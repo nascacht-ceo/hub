@@ -30,9 +30,9 @@ public static class AzureServiceExtensions
 
     private static IServiceCollection AddNascachtAzureServices(this IServiceCollection services)
     {
-		services.TryAddSingleton<ITenantManager, TenantManager>();
 		services.TryAddSingleton<ITenantAccessor<AzureTenant>, TenantAccessor<AzureTenant>>();
 		services.TryAddSingleton<AzureTenantManager>();
+		services.AddKeyedSingleton<ITenantManager, AzureTenantManager>("AzureTenantManager", (sp, _) => sp.GetRequiredService<AzureTenantManager>());
         services.AddSingleton<IAzureClientFactory<BlobServiceClient>, BlobServiceClientFactory>();
 		services.AddSingleton<IAzureClientFactory<SecretClient>, SecretClientFactory>();
 		services.AddSingleton<IAzureClientFactory<ArmClient>, ArmClientFactory>();

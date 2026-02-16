@@ -52,6 +52,7 @@ public class StorageServiceFacts
 		[InlineData("gcp://some/bucket/file.txt", "google.storage://bucket=some")]
 		[InlineData("google://some/bucket/file.txt", "google.storage://bucket=some")]
 		[InlineData("google.gcp://some/bucket/file.txt", "google.storage://bucket=some")]
+		[InlineData("azure.blob://some/bucket/file.txt", "azure.blob://account=some;identity=true")]
 		public void NormalizesUri(string url, string expected)
 		{
 			var uri = new Uri(url);
@@ -84,7 +85,6 @@ public class StorageServiceFacts
 			Assert.NotNull(blobStorage);
 			using var stream = await blobStorage.OpenReadAsync(uri.PathAndQuery);
 			Assert.NotNull(stream);
-
 		}
 	}
 
@@ -165,6 +165,24 @@ public class StorageServiceFacts
 			var info = new FileInfo($"./{guid}");
 			Assert.NotNull(info);
 			Assert.Equal(13, info.Length);
+		}
+	}
+
+	public class GetDownloadUrlAsync: StorageServiceFacts
+	{
+		[Theory]
+		[InlineData("aws.s3://nascacht-io-tests/bookmark.pdf")]
+		[InlineData("azure.blob://nascacht/nascacht-io-tests/bookmark.pdf")]
+		public async Task ReturnsUrl(string url)
+		{
+			var downloadUrl = await _storageService.GetDownloadUrlAsync(url, "application/pdf", TimeSpan.FromMinutes(5));
+			Assert.NotNull(downloadUrl);
+			Assert.StartsWith("http", downloadUrl);
+
+			using var httpClient = new HttpClient();
+			using var response = await httpClient.GetAsync(downloadUrl);
+			Assert.True(response.IsSuccessStatusCode, $"Download failed with status {response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+			Assert.True(response.Content.Headers.ContentLength > 0, "Downloaded content should not be empty");
 		}
 	}
 }

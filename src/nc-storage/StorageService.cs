@@ -1,4 +1,5 @@
 ﻿using FluentStorage;
+using FluentStorage.Azure.Blobs;
 using FluentStorage.Blobs;
 using FluentStorage.Utils.Extensions;
 using Microsoft.Extensions.Logging;
@@ -6,12 +7,15 @@ using Microsoft.Extensions.Options;
 using nc.Scaling;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using FluentStorage.AWS.Blobs;
+using nc.Cloud;
 
 namespace nc.Storage;
 
 public class StorageService
 {
 	private readonly StorageServiceOptions _options;
+	private readonly ITenantManager? _tenants;
 	private readonly ILogger<StorageServiceOptions>? _logger;
 
 	public StorageService()
@@ -23,6 +27,7 @@ public class StorageService
 		StorageFactory.Modules.UseGoogleCloudStorage();
 		StorageFactory.Modules.UseFtpStorage();
 		StorageFactory.Modules.UseSftpStorage();
+
 	}
 
 	public StorageService(StorageServiceOptions options)
@@ -31,10 +36,13 @@ public class StorageService
 		_options = options ?? new StorageServiceOptions();
 	}
 
-	public StorageService(IOptions<StorageServiceOptions> options, ILogger<StorageServiceOptions>? logger = null)
+	public StorageService(IOptions<StorageServiceOptions> options, 
+		ITenantManager? tenants = null, 
+		ILogger<StorageServiceOptions>? logger = null)
 		: this()
 	{
 		_options = options.Value ?? new StorageServiceOptions();
+		_tenants = tenants;
 		_logger = logger;
 	}
 
@@ -108,6 +116,20 @@ public class StorageService
 		if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
 			throw new ArgumentOutOfRangeException(nameof(url), "The url must be a valid uri, such as google:storage://mybucket/folder/file.txt");
 		return uri;
+	}
+
+	public async Task<string> GetDownloadUrlAsync(string url, string mimeType, TimeSpan? validFor = null, CancellationToken cancellationToken = default)
+	{
+		var uri = ToUri(url);
+		validFor ??= _options.DownloadUrlTimespan;
+		var blobPath = StoragePath.Normalize(uri.AbsolutePath);	
+		using var blobStorage = GetBlobStorage(uri);
+		return blobStorage switch
+		{
+			IAwsS3BlobStorage s3 => await s3.GetDownloadUrlAsync(blobPath, string.Empty, (int)validFor.Value.TotalSeconds),
+			IAzureBlobStorage azure => await azure.GetBlobSasAsync(blobPath, new BlobSasPolicy(DateTimeOffset.Now, validFor.Value) { Permissions = BlobSasPermission.Read }, cancellationToken: cancellationToken),
+			_ => throw new NotSupportedException($"GetDownloadUrlAsync is not supported for storage type '{blobStorage.GetType().Name}'")
+		};
 	}
 
 	#region IBlobStorage Implementation

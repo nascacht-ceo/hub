@@ -21,7 +21,7 @@ public class AwsServiceExtensionFacts
 			.AddJsonFile("appsettings.json")
 			.Build();
 		var services = new ServiceCollection()
-			.AddNascachtAwsServices(config.GetSection("nc"))
+			.AddNascachtAmazonServices(config.GetSection("nc"))
 			.BuildServiceProvider();
 
 

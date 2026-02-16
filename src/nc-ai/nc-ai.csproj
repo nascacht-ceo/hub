@@ -15,6 +15,7 @@
     </PackageReference>
     <PackageReference Include="GeminiDotnet.Extensions.AI" Version="0.21.0" />
     <PackageReference Include="Google.Cloud.AIPlatform.V1" Version="3.60.0" />
+    <PackageReference Include="Google.GenAI" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.2.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.2.0-preview.1.26063.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2" />

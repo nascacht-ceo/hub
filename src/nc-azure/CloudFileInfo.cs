@@ -4,8 +4,8 @@ using Azure.Storage.Blobs.Models;
 public class CloudFileInfo : ICloudFileInfo
 {
     private readonly BlobClient _blobClient;
-    private readonly BlobProperties? _properties;
-    private readonly BlobItemProperties? _itemProperties;
+    //private readonly BlobProperties? _properties;
+    //private readonly BlobItemProperties? _itemProperties;
 
     /// <summary>
     /// Creates a <see cref="ICloudFileInfo"/> from <paramref name="item"/>.

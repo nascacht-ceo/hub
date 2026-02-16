@@ -87,6 +87,12 @@ public record StorageServiceOptions
 	public string AwsRegionDefault { get; init; } = "us-east-1";
 
 	/// <summary>
+	/// Sets the default <see cref="TimeSpan"/> for <see cref="StorageService.GetDownloadUrlAsync(string, string, TimeSpan, CancellationToken)"/>
+	/// if the TimeSpan parameter is not set.
+	/// </summary>
+	public TimeSpan DownloadUrlTimespan { get; set; } = TimeSpan.FromDays(1); 
+
+	/// <summary>
 	/// Gets the collection of Google Cloud Platform (GCP) service account identities associated with this instance.
 	/// </summary>
 	/// <remarks>The dictionary maps identity names to their corresponding <see cref="GoogleTenant"/> objects.

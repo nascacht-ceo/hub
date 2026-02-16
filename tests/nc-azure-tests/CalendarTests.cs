@@ -25,7 +25,7 @@ public class CalendarTests
 
             // Create a "drive": a calendar in the Calendar account.
             var name = $"{Guid.NewGuid()}";
-            var repository = await calendarSource.CreateAsync(new CalendarRepositoryOptions() { Name = name, UserEmail = "epatrick@quandis.com" });
+            var repository = await calendarSource.CreateAsync(new CalendarRepositoryOptions() { Name = name, UserEmail = "ceo@nascacht.io" });
             Assert.NotNull(repository);
             // Create an "event" in the "drive".
             var results = await repository.SaveAsync(new CalendarEvent()
@@ -34,7 +34,7 @@ public class CalendarTests
                 Start = DateTimeOffset.Now,
                 End = DateTimeOffset.Now.AddHours(1),
                 TimeZone = "Eastern Standard Time",
-                Attendees = new List<string> { "epatrick@quandis.com" }
+                Attendees = new List<string> { "ceo@nascacht.io" }
             });
         }
     }

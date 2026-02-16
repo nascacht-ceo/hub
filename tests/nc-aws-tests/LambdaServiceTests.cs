@@ -7,17 +7,14 @@ using NuGet.Versioning;
 namespace nc.Aws.Tests;
 
 [Collection((nameof(AmazonFixture)))]
-public class LambdaServiceTests
+public class LambdaServiceTests: IAsyncLifetime
 {
-	private readonly LambdaService _lambdaService;
+	private readonly AmazonFixture _fixture;
+	private LambdaService _lambdaService;
 
 	public LambdaServiceTests(AmazonFixture fixture)
 	{
-		_lambdaService = new LambdaService(
-			new AmazonLambdaClient(new AmazonLambdaConfig { ServiceURL = fixture.ServiceUrl }),
-			new AmazonS3Client(new AmazonS3Config { ServiceURL = fixture.ServiceUrl, ForcePathStyle = true }),
-			LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace)).CreateLogger<LambdaService>()
-		);
+		_fixture = fixture;
 	}
 
 	[Fact]
@@ -73,6 +70,17 @@ public class LambdaServiceTests
 
 		// Assuming the Lambda returns a simple object with a 'Result' property
 		// var output = System.Text.Json.JsonSerializer.Deserialize<SampleLambdaOutput>(responseJson);
+
+	}
+
+	public Task DisposeAsync() => Task.CompletedTask;
+
+	public async Task InitializeAsync()
+	{
+		var lambdaClient = _fixture.Tenant.GetService<IAmazonLambda>();
+		var s3Client = _fixture.Tenant.GetService<IAmazonS3>();
+		var logger = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace)).CreateLogger<LambdaService>();
+		_lambdaService = new LambdaService(lambdaClient, s3Client, logger);
 
 	}
 }

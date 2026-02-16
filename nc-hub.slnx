@@ -3,6 +3,7 @@
     <Project Path="samples/aws-lambda/aws-lambda.csproj" Id="21bd1d72-c1bc-4c36-be14-f66b4d6ab99e" />
   </Folder>
   <Folder Name="/Solution Items/">
+    <File Path=".claude/claude.md" />
     <File Path=".gitignore" />
     <File Path="coding.md" />
     <File Path="Directory.Build.props" />
@@ -35,6 +36,7 @@
     <Project Path="src/nc-azure/nc-azure.csproj" />
     <Project Path="src/nc-cloud/nc-cloud.csproj" />
     <Project Path="src/nc-data/nc-data.csproj" />
+    <Project Path="src/nc-events/nc-events.csproj" Id="dfe146c4-55a0-43f9-8829-f3b5ffbd1d9d" />
     <Project Path="src/nc-extensions-logging/nc-extensions-logging.csproj" Id="42da11aa-b43d-4673-b3fb-c337b6c97c33" />
     <Project Path="src/nc-extensions-streaming/nc-extensions-streaming.csproj" Id="7cb375c3-b71f-48ed-9b16-366b74b776d1" />
     <Project Path="src/nc-extensions/nc-extensions.csproj" />

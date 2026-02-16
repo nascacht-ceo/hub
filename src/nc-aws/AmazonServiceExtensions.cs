@@ -17,7 +17,7 @@ namespace nc.Extensions.DependencyInjection;
 /// <remarks>This class contains methods to simplify the registration and configuration of AWS services  within an
 /// application's dependency injection container. It is designed to integrate with  the .NET configuration system and
 /// AWS SDK for .NET.</remarks>
-public static class AwsServiceExtensions
+public static class AmazonServiceExtensions
 {
 	/// <summary>
 	/// Represents the configuration section name used to retrieve AWS-related settings.
@@ -36,10 +36,17 @@ public static class AwsServiceExtensions
 	/// <param name="services">The <see cref="IServiceCollection"/> to which the AWS services will be added.</param>
 	/// <param name="configuration">The application's configuration, used to retrieve AWS settings.</param>
 	/// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
-	public static IServiceCollection AddNascachtAwsServices(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddNascachtAmazonServices(this IServiceCollection services, IConfiguration configuration)
 	{
 		var section = configuration.GetSection(ConfigSection);
-		services.AddDefaultAWSOptions(section.GetAWSOptions(string.Empty));
+		var defaultOptions = section.GetAWSOptions(string.Empty);
+		if (section["AccessKey"] is not null && section["SecretKey"] is not null)
+		{
+			defaultOptions.Credentials = new Amazon.Runtime.BasicAWSCredentials(
+				section["AccessKey"]!,
+				section["SecretKey"]!);
+		}
+		services.AddDefaultAWSOptions(defaultOptions);
 		services.Configure<DynamoStoreOptions>(section.GetSection(nameof(DynamoStoreOptions)));
 		services.Configure<EncryptionStoreOptions>(section.GetSection(nameof(EncryptionStoreOptions)));
 
@@ -70,9 +77,9 @@ public static class AwsServiceExtensions
 	/// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
 	private static IServiceCollection AddNascachtAwsServices(this IServiceCollection services)
 	{
-		services.TryAddSingleton<ITenantManager, TenantManager>();
 		services.TryAddSingleton<ITenantAccessor<AmazonTenant>, TenantAccessor<AmazonTenant>>();
 		services.TryAddSingleton<AmazonTenantManager>();
+		services.AddKeyedSingleton<ITenantManager, AmazonTenantManager>("AmazonTenantManager", (sp, _) => sp.GetRequiredService<AmazonTenantManager>());
 		services.TryAddAWSService<IAmazonS3>();
 		services.TryAddAWSService<IAmazonSecretsManager>();
 		services.TryAddAWSService<IAmazonLambda>();

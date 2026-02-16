@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace nc.Cloud;
 
 public interface ITenantAccessor
 {
-	IDisposable SetTenant(string name);
+	//IDisposable SetTenantName(string name);
 
-	string? GetTenant();
+	//string? GetTenantName();
+
+	IDisposable SetTenant(ITenant tenant);
+
+	ITenant? GetTenant();
 }
 
 public interface ITenantAccessor<T>: ITenantAccessor
@@ -18,15 +23,29 @@ public interface ITenantAccessor<T>: ITenantAccessor
 
 public class TenantAccessor: ITenantAccessor
 {
-	private readonly AsyncLocal<string?> _tenant = new();
-	public IDisposable SetTenant(string name)
+	// private readonly AsyncLocal<string?> _tenantName = new();
+
+	private readonly AsyncLocal<ITenant?> _tenant = new();
+	//public IDisposable SetTenantName(string name)
+	//{
+	//	var previousTenant = _tenantName.Value;
+	//	_tenantName.Value = name;
+	//	return new DisposeAction(() => _tenantName.Value = previousTenant);
+	//}
+
+	//public string? GetTenantName()
+	//{
+	//	return _tenantName.Value;
+	//}
+
+	public IDisposable SetTenant(ITenant tenant)
 	{
 		var previousTenant = _tenant.Value;
-		_tenant.Value = name;
+		_tenant.Value = tenant;
 		return new DisposeAction(() => _tenant.Value = previousTenant);
 	}
 
-	public string? GetTenant()
+	public ITenant? GetTenant()
 	{
 		return _tenant.Value;
 	}

@@ -60,26 +60,40 @@ public class GoogleTenantManager : ITenantManager<GoogleTenant>
 		=> _tenants.DeleteAsync(tenantName);
 
 	/// <summary>
+	/// Retrieves the tenant with the specified name.
+	/// </summary>
+	/// <param name="tenantName">The name of the tenant to retrieve.</param>
+	/// <returns>The <see cref="GoogleTenant"/> instance.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown if the tenant is not found and ThrowOnNotFound is true.</exception>
+	public GoogleTenant GetTenant(string tenantName)
+	{
+		var tenant = _tenants.GetAsync(tenantName).AsTask().GetAwaiter().GetResult();
+		if (tenant == null && _tenantOptions.ThrowOnNotFound)
+			throw new ArgumentOutOfRangeException(nameof(tenantName), $"Tenant '{tenantName}' not found.");
+		return tenant!;
+	}
+
+	/// <summary>
 	/// Asynchronously retrieves a <see cref="GoogleTenant"/> for the specified tenant name.
 	/// </summary>
 	/// <param name="tenantName">The name of the tenant to retrieve. If null, uses the current tenant context.</param>
 	/// <returns>The <see cref="GoogleTenant"/> instance, or null if not found and ThrowOnNotFound is false.</returns>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if the tenant is not found and ThrowOnNotFound is true.</exception>
-	public async Task<GoogleTenant?> GetTenantAsync(string? tenantName = null)
-	{
-		tenantName ??= _tenantAccessor.GetTenant();
-		if (tenantName == null)
-			return null;
+	//public async Task<GoogleTenant?> GetTenantAsync(string? tenantName = null)
+	//{
+	//	tenantName ??= _tenantAccessor.GetTenantName();
+	//	if (tenantName == null)
+	//		return null;
 
-		var tenant = await _tenants.GetAsync(tenantName);
-		if (tenant == null)
-		{
-			if (_tenantOptions.ThrowOnNotFound)
-				throw new ArgumentOutOfRangeException(nameof(tenantName), $"Tenant '{tenantName}' not found.");
-			_logger?.LogWarning("Tenant '{TenantName}' not found.", tenantName);
-		}
-		return tenant;
-	}
+	//	var tenant = await _tenants.GetAsync(tenantName);
+	//	if (tenant == null)
+	//	{
+	//		if (_tenantOptions.ThrowOnNotFound)
+	//			throw new ArgumentOutOfRangeException(nameof(tenantName), $"Tenant '{tenantName}' not found.");
+	//		_logger?.LogWarning("Tenant '{TenantName}' not found.", tenantName);
+	//	}
+	//	return tenant;
+	//}
 
 	/// <summary>
 	/// Asynchronously retrieves GCP credentials for the specified tenant.
@@ -90,84 +104,67 @@ public class GoogleTenantManager : ITenantManager<GoogleTenant>
 	/// <param name="tenantName">The name of the tenant for which credentials are retrieved. If null, ADC is used.</param>
 	/// <returns>A <see cref="GoogleCredential"/> configured for the specified tenant, or ADC if no tenant is specified.</returns>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if the tenant is not found and ThrowOnNotFound is true.</exception>
-	public async Task<GoogleCredential> GetCredentialAsync(string? tenantName = null)
-	{
-		tenantName ??= _tenantAccessor.GetTenant();
-		if (tenantName != null)
-		{
-			var tenant = await _tenants.GetAsync(tenantName);
-			if (tenant == null)
-			{
-				if (_tenantOptions.ThrowOnNotFound)
-					throw new ArgumentOutOfRangeException(nameof(tenantName), $"Tenant '{tenantName}' not found.");
-				_logger?.LogWarning("Tenant '{TenantName}' not found. Using Application Default Credentials instead.", tenantName);
-			}
-			else
-			{
-				_logger?.LogTrace("Creating GCP credentials for tenant '{TenantName}'.", tenantName);
-				return tenant;
-			}
-		}
-		_logger?.LogTrace("Using Application Default Credentials (no tenant specified).");
-		return GoogleCredential.GetApplicationDefault();
-	}
+	//public async Task<GoogleCredential> GetCredentialAsync(string? tenantName = null)
+	//{
+	//	tenantName ??= _tenantAccessor.GetTenantName();
+	//	if (tenantName != null)
+	//	{
+	//		var tenant = await _tenants.GetAsync(tenantName);
+	//		if (tenant == null)
+	//		{
+	//			if (_tenantOptions.ThrowOnNotFound)
+	//				throw new ArgumentOutOfRangeException(nameof(tenantName), $"Tenant '{tenantName}' not found.");
+	//			_logger?.LogWarning("Tenant '{TenantName}' not found. Using Application Default Credentials instead.", tenantName);
+	//		}
+	//		else
+	//		{
+	//			_logger?.LogTrace("Creating GCP credentials for tenant '{TenantName}'.", tenantName);
+	//			return tenant;
+	//		}
+	//	}
+	//	_logger?.LogTrace("Using Application Default Credentials (no tenant specified).");
+	//	return GoogleCredential.GetApplicationDefault();
+	//}
 
 	/// <summary>
 	/// Asynchronously retrieves the GCP project ID for the specified tenant.
 	/// </summary>
 	/// <param name="tenantName">The name of the tenant. If null, uses the current tenant context or default project.</param>
 	/// <returns>The project ID for the tenant, or the default project ID if no tenant is found.</returns>
-	public async Task<string?> GetProjectIdAsync(string? tenantName = null)
-	{
-		tenantName ??= _tenantAccessor.GetTenant();
-		if (tenantName != null)
-		{
-			var tenant = await _tenants.GetAsync(tenantName);
-			if (tenant?.ProjectId != null)
-				return tenant.ProjectId;
-		}
-		return _tenantOptions.DefaultProjectId;
-	}
+	//public async Task<string?> GetProjectIdAsync(string? tenantName = null)
+	//{
+	//	tenantName ??= _tenantAccessor.GetTenantName();
+	//	if (tenantName != null)
+	//	{
+	//		var tenant = await _tenants.GetAsync(tenantName);
+	//		if (tenant?.ProjectId != null)
+	//			return tenant.ProjectId;
+	//	}
+	//	return _tenantOptions.DefaultProjectId;
+	//}
 }
 
-/// <summary>
-/// Provides extension methods for managing Google tenants using an <see cref="ITenantManager"/>.
-/// </summary>
-public static class GoogleTenantManagerExtensions
-{
-	/// <summary>
-	/// Asynchronously adds a new Google tenant to the tenant manager.
-	/// </summary>
-	/// <param name="tenantManager">The <see cref="ITenantManager"/> instance used to manage tenants.</param>
-	/// <param name="tenant">The <see cref="GoogleTenant"/> instance representing the tenant to be added.</param>
-	/// <returns>A <see cref="ValueTask{TResult}"/> that represents the asynchronous operation.</returns>
-	public static ValueTask<GoogleTenant> AddGoogleTenantAsync(this ITenantManager tenantManager, GoogleTenant tenant)
-	{
-		var googleTenantManager = tenantManager.Services.GetRequiredService<GoogleTenantManager>();
-		return googleTenantManager.AddTenantAsync(tenant);
-	}
-
-	/// <summary>
-	/// Removes a Google tenant with the specified name asynchronously.
-	/// </summary>
-	/// <param name="tenantManager">The <see cref="ITenantManager"/> instance used to manage tenants.</param>
-	/// <param name="tenantName">The name of the Google tenant to remove.</param>
-	/// <returns>A task that represents the asynchronous operation.</returns>
-	public static Task RemoveGoogleTenantAsync(this ITenantManager tenantManager, string tenantName)
-	{
-		var googleTenantManager = tenantManager.Services.GetRequiredService<GoogleTenantManager>();
-		return googleTenantManager.RemoveTenantAsync(tenantName);
-	}
-
-	/// <summary>
-	/// Asynchronously retrieves GCP credentials for the specified tenant.
-	/// </summary>
-	/// <param name="tenantManager">The <see cref="ITenantManager"/> instance used to manage tenants.</param>
-	/// <param name="tenantName">The name of the tenant. If null, uses ADC.</param>
-	/// <returns>A <see cref="GoogleCredential"/> for the specified tenant.</returns>
-	public static Task<GoogleCredential> GetGoogleCredentialAsync(this ITenantManager tenantManager, string? tenantName = null)
-	{
-		var googleTenantManager = tenantManager.Services.GetRequiredService<GoogleTenantManager>();
-		return googleTenantManager.GetCredentialAsync(tenantName);
-	}
-}
+// TODO: Re-enable when ITenantManager base interface with Services property is implemented
+///// <summary>
+///// Provides extension methods for managing Google tenants using an <see cref="ITenantManager"/>.
+///// </summary>
+//public static class GoogleTenantManagerExtensions
+//{
+//	public static ValueTask<GoogleTenant> AddGoogleTenantAsync(this ITenantManager tenantManager, GoogleTenant tenant)
+//	{
+//		var googleTenantManager = tenantManager.Services.GetRequiredService<GoogleTenantManager>();
+//		return googleTenantManager.AddTenantAsync(tenant);
+//	}
+//
+//	public static Task RemoveGoogleTenantAsync(this ITenantManager tenantManager, string tenantName)
+//	{
+//		var googleTenantManager = tenantManager.Services.GetRequiredService<GoogleTenantManager>();
+//		return googleTenantManager.RemoveTenantAsync(tenantName);
+//	}
+//
+//	public static Task<GoogleCredential> GetGoogleCredentialAsync(this ITenantManager tenantManager, string? tenantName = null)
+//	{
+//		var googleTenantManager = tenantManager.Services.GetRequiredService<GoogleTenantManager>();
+//		return googleTenantManager.GetCredentialAsync(tenantName);
+//	}
+//}

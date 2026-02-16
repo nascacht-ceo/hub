@@ -329,10 +329,8 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
-# qbo4
 **/package-lock.json
 **/src/**/*.js
 **/src/**/*.d.ts
-/src/qbo4.Data.Web/package-lock.json
 /samples/aws-lambda/aws-lambda.lambda.zip
 /aws-trust-policy.json

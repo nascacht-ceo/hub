@@ -1,17 +1,17 @@
 ﻿using GeminiDotnet;
 using GeminiDotnet.Extensions.AI;
+using Google.Cloud.AIPlatform.V1;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using System.Text;
+using Microsoft.Graph.Models;
 
 namespace nc.Ai.Tests;
 
-public class Gemini
+public class Gemini : CommonTests
 {
 
 	public IConfigurationSection Configuration { get; }
 	public GeminiClientOptions Options { get; }
-	public IChatClient Client { get; }
 
 	public Gemini()
 	{
@@ -22,11 +22,58 @@ public class Gemini
 			.GetSection("tests:nc_ai_tests:gemini");
 
 		Options = new GeminiClientOptions { ApiKey = Configuration["apikey"]!, ModelId = Configuration["model"] };
-
+		Options.ModelId = "gemini-2.5-pro"; // "gemini -1.5-pro-latest";
 		Client = new GeminiChatClient(Options);
 
 		//Client = new ChatClient(Configuration["model"], Configuration["secretkey"])
 		//	.AsIChatClient();
+	}
+
+	//[Fact]
+	//public async Task UploadsFiles()
+	//{
+	//	var fileClient = new GeminiDotnet.GeminiFileClient(apiKey);
+	//	using var stream = await s3Client.GetObjectStreamAsync(...); // or local stream
+	//	var upload = await fileClient.UploadFileAsync(stream, new UploadFileOptions { MimeType = "application/pdf" });
+
+	//	// 2. Reference the uploaded file's URI (stored for 48 hours)
+	//	var userMessage = new ChatMessage(
+	//		ChatRole.User,
+	//		[new FileContent(upload.Uri, "application/pdf"), question]
+	//	);
+	//}
+
+	[Fact]
+	public async Task GetsModels()
+	{
+		var clientBuilder = new ModelServiceClientBuilder
+		{
+			Endpoint = $"https://us-central1-aiplatform.googleapis.com/"
+		};
+		ModelServiceClient client = await clientBuilder.BuildAsync();
+
+		// 2. Prepare the request
+		string parent = $"projects/seventh-seeker-476512-r1/locations/us-central1";
+		ListModelsRequest request = new ListModelsRequest { Parent = parent };
+
+		try
+		{
+			// 3. List the models
+			Console.WriteLine($"--- Models in us-central1 ---");
+			var models = client.ListModels(request);
+
+			foreach (var model in models)
+			{
+				Console.WriteLine($"Name: {model.Name}");
+				Console.WriteLine($"Display Name: {model.DisplayName}");
+				Console.WriteLine($"Supported Prediction: {model.SupportedExportFormats}");
+				Console.WriteLine("-------------------------");
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error fetching models: {ex.Message}");
+		}
 	}
 
 	[Fact(Skip = "local testing only.")]
@@ -39,32 +86,33 @@ public class Gemini
 		Assert.Equal("value", section["compound:key"]);
 		Assert.Equal("dummy", section["nc_ai_tests:gemini:apikey"]);
 	}
-	[Fact]
-	public async Task Sample()
-	{
-		var response = await Client.GetResponseAsync("What is AI?");
-		Assert.NotNull(response);
-	}
+	//[Fact]
+	//public async Task Sample()
+	//{
+	//	var response = await Client.GetResponseAsync("What is AI?");
+	//	Assert.NotNull(response);
+	//}
 
-	[Fact]
-	public async Task FunctionCalling()
-	{
-		ChatOptions chatOptions = new()
-		{
-			Tools = [AIFunctionFactory.Create(Functions.GetWeather)],
+	//[Fact]
+	//public async Task FunctionCalling()
+	//{
+	//	ChatOptions chatOptions = new()
+	//	{
+	//		Tools = [AIFunctionFactory.Create(Functions.GetWeather)],
 
-		};
-		var client = ChatClientBuilderChatClientExtensions
-			.AsBuilder(Client)
-			.UseFunctionInvocation()
-			.Build();
-		var response = new StringBuilder();
-		await foreach (var message in client.GetStreamingResponseAsync("What is the weather? Do I need an umbrella?", chatOptions))
-		{
-			response.AppendLine(message.Text);
-		}
-		Assert.NotNull(response.ToString());
-	}
+	//	};
+	//	var client = ChatClientBuilderChatClientExtensions
+	//		.AsBuilder(Client)
+	//		.UseFunctionInvocation()
+	//		.Build();
+	//	var response = new StringBuilder();
+	//	await foreach (var message in client.GetStreamingResponseAsync("What is the weather? Do I need an umbrella?", chatOptions))
+	//	{
+	//		response.AppendLine(message.Text);
+	//	}
+	//	var answer = response.ToString();
+	//	Assert.True(answer.Contains("sunny") || answer.Contains("raining"));
+	//}
 
 	[Fact]
 
@@ -84,16 +132,16 @@ public class Gemini
 		Assert.NotEmpty(vectors);
 	}
 
-	[Fact]
-	public async Task FileAnalysis()
-	{
-		var file = new UriContent("https://nascacht-io-sample.s3.us-east-1.amazonaws.com/financial/w2.pdf", "application/pdf");
-		var question = new TextContent("What is the total amount in box 1?");
-		var userMessage = new ChatMessage(
-			ChatRole.User,
-			[file, question] // Combining text and file content
-		);
-		var response = await Client.GetResponseAsync([userMessage]);
-
-	}
+	//[Fact]
+	//public async Task FileAnalysis()
+	//{
+	//	var file = new UriContent("https://nascacht-io-sample.s3.us-east-1.amazonaws.com/financial/w2.pdf", "application/pdf");
+	//	var question = new TextContent("What is the total amount in box 1?");
+	//	var userMessage = new ChatMessage(
+	//		ChatRole.User,
+	//		[file, question] // Combining text and file content
+	//	);
+	//	var response = await Client.GetResponseAsync([userMessage]);
+	//	Assert.Contains("44,629.35", response.Text);
+	//}
 }

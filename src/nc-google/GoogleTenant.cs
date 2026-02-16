@@ -131,6 +131,35 @@ public class GoogleTenant : ITenant
 	});
 
 	/// <summary>
+	/// Creates a Google Cloud service client of the specified type using this tenant's credentials.
+	/// </summary>
+	/// <typeparam name="T">The type of Google Cloud service client to create.</typeparam>
+	/// <returns>An instance of the requested service configured with this tenant's credentials.</returns>
+	/// <exception cref="NotSupportedException">Thrown when T is not a supported Google Cloud client type.</exception>
+	/// <remarks>
+	/// Currently supported types:
+	/// <list type="bullet">
+	/// <item><see cref="GoogleCredential"/></item>
+	/// </list>
+	/// To add support for additional types (e.g., StorageClient, BigQueryClient),
+	/// add the appropriate NuGet package and extend the switch statement.
+	/// </remarks>
+	public T GetService<T>()
+	{
+		object client = typeof(T).Name switch
+		{
+			nameof(GoogleCredential) => (GoogleCredential)this,
+			// Add more Google Cloud client types here as needed:
+			// "StorageClient" => StorageClient.Create((GoogleCredential)this),
+			// "BigQueryClient" => BigQueryClient.Create(ProjectId, (GoogleCredential)this),
+			_ => throw new NotSupportedException($"Google Cloud client type '{typeof(T).Name}' is not supported. " +
+				$"Supported types: {nameof(GoogleCredential)}. " +
+				$"Add the appropriate NuGet package and extend GoogleTenant.GetService<T>() for additional types.")
+		};
+		return (T)client;
+	}
+
+	/// <summary>
 	/// Defines an implicit conversion from a <see cref="GoogleTenant"/> instance to a <see cref="GoogleCredential"/> object.
 	/// </summary>
 	/// <remarks>Credentials are resolved in the following order:

@@ -13,7 +13,7 @@ public class TenantAccessorFacts
 			.BuildServiceProvider();
 	}
 
-	public class GetTenant: TenantAccessorFacts
+	public class GetTenant : TenantAccessorFacts
 	{
 		[Fact]
 		public void DefaultsToNull()
@@ -26,9 +26,10 @@ public class TenantAccessorFacts
 		public void ReturnsScopedTenant()
 		{
 			var tenantAccessor = _services.GetRequiredService<ITenantAccessor>();
-			using (tenantAccessor.SetTenant("tenant1"))
+			using (tenantAccessor.SetTenant(new MockTenant()))
 			{
-				Assert.Equal("tenant1", tenantAccessor.GetTenant());
+				Assert.Equal("MockTenant", tenantAccessor.GetTenant()?.Name);
+
 			}
 			Assert.Null(tenantAccessor.GetTenant());
 		}
@@ -37,17 +38,28 @@ public class TenantAccessorFacts
 		public void SupportsNestedTenants()
 		{
 			var tenantAccessor = _services.GetRequiredService<ITenantAccessor>();
-			using (tenantAccessor.SetTenant("tenant1"))
+			using (tenantAccessor.SetTenant(new MockTenant() { Name = "tenant1" }))
 			{
-				Assert.Equal("tenant1", tenantAccessor.GetTenant());
-				using (tenantAccessor.SetTenant("tenant2"))
+				Assert.Equal("tenant1", tenantAccessor.GetTenant()?.Name);
+				using (tenantAccessor.SetTenant(new MockTenant() { Name = "tenant2" }))
 				{
-					Assert.Equal("tenant2", tenantAccessor.GetTenant());
+					Assert.Equal("tenant2", tenantAccessor.GetTenant()?.Name);
 				}
-				Assert.Equal("tenant1", tenantAccessor.GetTenant());
+				Assert.Equal("tenant1", tenantAccessor.GetTenant()?.Name);
 			}
 			Assert.Null(tenantAccessor.GetTenant());
 		}
 
+	}
+
+	public class MockTenant : ITenant
+	{
+		public string Name { get; set; } = "MockTenant";
+		public string TenantId { get; set; } = Guid.NewGuid().ToString();
+
+		public T GetService<T>()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

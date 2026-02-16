@@ -2,13 +2,13 @@
 
 namespace nc.Cloud;
 
-public class TenantManager: ITenantManager
-{
-	public IServiceProvider Services { get; private set; }
+//public class TenantManager: ITenantManager
+//{
+//	public IServiceProvider Services { get; private set; }
 
-	public TenantManager(IServiceProvider services)
-	{
-		Services = services;
-	}
+//	public TenantManager(IServiceProvider services)
+//	{
+//		Services = services;
+//	}
 
-}
+//}
