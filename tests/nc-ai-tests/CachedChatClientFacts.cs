@@ -1,3 +1,4 @@
+using Google.GenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using nc.Ai.Caching;
@@ -117,7 +118,7 @@ public class CachedChatClientFacts
 				return;
 
 			var geminiClient = new GeminiCachedChatClient(
-				new HttpClient(), apiKey, model);
+				new Client(apiKey: apiKey), model);
 			var strategy = new GeminiCacheStrategy(geminiClient);
 			var client = new CachedChatClient(geminiClient, strategy);
 

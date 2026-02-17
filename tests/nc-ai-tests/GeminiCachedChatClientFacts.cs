@@ -1,4 +1,4 @@
-using Amazon.S3.Model;
+using Google.GenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using nc.Ai.Gemini;
@@ -65,7 +65,7 @@ public class GeminiCachedChatClientFacts : IAsyncLifetime
 
 		_apiKey = config["apikey"]!;
 		var model = config["model"]!;
-		_client = new GeminiCachedChatClient(new HttpClient(), _apiKey, model);
+		_client = new GeminiCachedChatClient(new Client(apiKey: _apiKey), model);
 	}
 
 	public async Task InitializeAsync()
@@ -108,9 +108,7 @@ public class GeminiCachedChatClientFacts : IAsyncLifetime
 
 			Assert.NotNull(response.Usage);
 			Assert.True(response.Usage.InputTokenCount > 0);
-			Assert.NotNull(response.Usage.AdditionalCounts);
-			Assert.True(response.Usage.AdditionalCounts.ContainsKey("cachedContentTokenCount"));
-			Assert.True(response.Usage.AdditionalCounts["cachedContentTokenCount"] > 0);
+			Assert.True(response.Usage.CachedInputTokenCount > 0);
 		}
 
 		[Fact]
@@ -165,6 +163,7 @@ public class GeminiCachedChatClientFacts : IAsyncLifetime
 				if (child.Value == null)
 					continue;
 				var file = new UriContent(child.Value, "application/pdf");
+				HostedFileContent
 				var question = new TextContent("This PDF comprises multiple PDFs. Return a table of: Document Name, Document Type, Start Page, End Page, Recoring, Notarized, and Signed'.");
 				var userMessage = new ChatMessage(
 					ChatRole.User,

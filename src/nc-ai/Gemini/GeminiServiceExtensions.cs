@@ -21,7 +21,6 @@ public static partial class AiServiceExtensions
 
 	private static IServiceCollection AddAiGemini(this IServiceCollection services)
 	{
-		services.AddSingleton<GeminiFileService>();
 		return services;
 	}
 }

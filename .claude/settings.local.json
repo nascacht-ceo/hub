@@ -11,7 +11,19 @@
       "WebFetch(domain:deepwiki.com)",
       "Bash(del \"tests\\\\nc-ai-tests\\\\CachedChatClientTests.cs\")",
       "Bash(del \"tests\\\\nc-ai-tests\\\\GeminiCachedChatClientTests.cs\")",
-      "Bash(del \"tests\\\\nc-ai-tests\\\\GeminiFileServiceTests.cs\")"
+      "Bash(del \"tests\\\\nc-ai-tests\\\\GeminiFileServiceTests.cs\")",
+      "WebFetch(domain:googleapis.github.io)",
+      "WebFetch(domain:www.nuget.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(dir:*)",
+      "Bash(gh api:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet run:*)",
+      "Bash(python:*)",
+      "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(\\(Get-ChildItem -Recurse -Filter ''Microsoft.Extensions.AI.Abstractions.dll'' -Path ''$env:USERPROFILE\\\\.nuget\\\\packages\\\\microsoft.extensions.ai.abstractions\\\\10.2.0'' | Select -First 1\\).FullName\\).GetType\\(''Microsoft.Extensions.AI.UsageDetails''\\).GetProperties\\(\\) | ForEach-Object { $_Name }\")",
+      "Bash(powershell -Command:*)",
+      "Bash(pwsh -Command \"[System.Reflection.Assembly]::LoadFrom\\(''C:\\\\Users\\\\EricPatrick\\\\.nuget\\\\packages\\\\google.genai\\\\1.0.0\\\\lib\\\\net8.0\\\\Google.GenAI.dll''\\) | Out-Null; [Google.GenAI.Caches].GetMethods\\([System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::DeclaredOnly\\) | ForEach-Object { $params = \\($_GetParameters\\(\\) | ForEach-Object { $_ParameterType.Name + '' '' + $_Name }\\) -join '', ''; $_Name + ''\\('' + $params + ''\\)'' }\")",
+      "Bash(pwsh:*)"
     ]
   }
 }

@@ -1,3 +1,4 @@
+using Google.GenAI;
 using Microsoft.Extensions.AI;
 using nc.Ai.Caching;
 using nc.Ai.Gemini;
@@ -12,7 +13,7 @@ public class GeminiCacheStrategyFacts
 		public void StripsCachedPromptReference()
 		{
 			var geminiClient = new GeminiCachedChatClient(
-				new HttpClient(), "fake-key", "fake-model");
+				new Client(apiKey: "fake-key"), "fake-model");
 			var strategy = new GeminiCacheStrategy(geminiClient);
 
 			var messages = new[]
@@ -34,7 +35,7 @@ public class GeminiCacheStrategyFacts
 		public void PreservesNonCachedContent()
 		{
 			var geminiClient = new GeminiCachedChatClient(
-				new HttpClient(), "fake-key", "fake-model");
+				new Client(apiKey: "fake-key"), "fake-model");
 			var strategy = new GeminiCacheStrategy(geminiClient);
 
 			var messages = new[]
@@ -59,7 +60,7 @@ public class GeminiCacheStrategyFacts
 		public void PassesThroughWhenNoCachedRef()
 		{
 			var geminiClient = new GeminiCachedChatClient(
-				new HttpClient(), "fake-key", "fake-model");
+				new Client(apiKey: "fake-key"), "fake-model");
 			var strategy = new GeminiCacheStrategy(geminiClient);
 
 			var messages = new[]
@@ -84,7 +85,7 @@ public class GeminiCacheStrategyFacts
 		public async Task FallsBackToPassthroughForSmallContent()
 		{
 			var geminiClient = new GeminiCachedChatClient(
-				new HttpClient(), "fake-key", "fake-model");
+				new Client(apiKey: "fake-key"), "fake-model");
 			var strategy = new GeminiCacheStrategy(geminiClient);
 
 			// Prompt with fewer than MinWordCount words uses passthrough fallback
