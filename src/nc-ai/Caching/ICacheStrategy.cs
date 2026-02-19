@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using System.Runtime.CompilerServices;
 
 namespace nc.Ai.Caching;
 
@@ -34,5 +35,7 @@ public interface ICacheStrategy
 	/// </summary>
 	/// <param name="messages">The original messages from the consumer.</param>
 	/// <returns>Transformed messages ready for the provider.</returns>
-	IEnumerable<ChatMessage> TransformMessages(IEnumerable<ChatMessage> messages);
+	IAsyncEnumerable<ChatMessage> TransformMessages(
+		IEnumerable<ChatMessage> messages, 
+		CancellationToken cancellationToken = default);
 }

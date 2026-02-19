@@ -1,6 +1,9 @@
+using Amazon.Runtime.Internal.Util;
 using Google.GenAI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using nc.Ai.Caching;
 using nc.Ai.Gemini;
 using System.Runtime.CompilerServices;
@@ -10,6 +13,18 @@ namespace nc.Ai.Tests;
 
 public class CachedChatClientFacts
 {
+	private readonly IAiContextCache _cache;
+
+	public CachedChatClientFacts()
+	{
+		var configuration = new ConfigurationBuilder().AddJsonFile("tests.json").Build();
+		var services = new ServiceCollection()
+			.Configure<AiContextCacheOptions>(configuration)
+			.AddSingleton<IDistributedCache, MemoryDistributedCache>()
+			.AddSingleton<IAiContextCache, AiContextCache>()
+			.BuildServiceProvider();
+		_cache = services.GetRequiredService<IAiContextCache>();
+	}
 	internal class StubChatClient : IChatClient
 	{
 		public IEnumerable<ChatMessage>? LastMessages { get; private set; }
@@ -117,9 +132,9 @@ public class CachedChatClientFacts
 			if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(model))
 				return;
 
-			var geminiClient = new GeminiCachedChatClient(
+			var geminiClient = new GeminiChatClient(_cache, 
 				new Client(apiKey: apiKey), model);
-			var strategy = new GeminiCacheStrategy(geminiClient);
+			var strategy = new GeminiCacheStrategy(geminiClient, new PassthroughCacheStrategy());
 			var client = new CachedChatClient(geminiClient, strategy);
 
 			var systemPrompt = """

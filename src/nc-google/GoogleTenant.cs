@@ -122,13 +122,15 @@ public class GoogleTenant : ITenant
 	[JsonIgnore]
 	public bool HasDirectCredentials => !string.IsNullOrEmpty(ClientEmail) && !string.IsNullOrEmpty(PrivateKey);
 
+	private static JsonSerializerOptions _jsonSerializerOptions = new()
+	{
+		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+	};
+
 	/// <summary>
 	/// Serializes this tenant's service account credentials to JSON format compatible with GCP.
 	/// </summary>
-	public string ToServiceAccountJson() => JsonSerializer.Serialize(this, new JsonSerializerOptions
-	{
-		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-	});
+	public string ToServiceAccountJson() => JsonSerializer.Serialize(this, _jsonSerializerOptions);
 
 	/// <summary>
 	/// Creates a Google Cloud service client of the specified type using this tenant's credentials.

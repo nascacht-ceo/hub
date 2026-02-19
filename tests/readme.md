@@ -98,7 +98,7 @@ $PROJECT = "seventh-seeker-476512-r1"
 gcloud iam service-accounts create $SA --project=$PROJECT --display-name=$SA
 
 # Storage: read/write/delete on your bucket
-gsutil iam ch "serviceAccount:${SA}@${PROJECT}.iam.gserviceaccount.com:roles/storage.objectAdmin" gs://nascacht-ai-tests
+g_cacheil iam ch "serviceAccount:${SA}@${PROJECT}.iam.gserviceaccount.com:roles/storage.objectAdmin" gs://nascacht-ai-tests
 
 # Vision API
 gcloud services enable vision.googleapis.com --project=$PROJECT   

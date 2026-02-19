@@ -23,7 +23,11 @@
       "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(\\(Get-ChildItem -Recurse -Filter ''Microsoft.Extensions.AI.Abstractions.dll'' -Path ''$env:USERPROFILE\\\\.nuget\\\\packages\\\\microsoft.extensions.ai.abstractions\\\\10.2.0'' | Select -First 1\\).FullName\\).GetType\\(''Microsoft.Extensions.AI.UsageDetails''\\).GetProperties\\(\\) | ForEach-Object { $_Name }\")",
       "Bash(powershell -Command:*)",
       "Bash(pwsh -Command \"[System.Reflection.Assembly]::LoadFrom\\(''C:\\\\Users\\\\EricPatrick\\\\.nuget\\\\packages\\\\google.genai\\\\1.0.0\\\\lib\\\\net8.0\\\\Google.GenAI.dll''\\) | Out-Null; [Google.GenAI.Caches].GetMethods\\([System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::DeclaredOnly\\) | ForEach-Object { $params = \\($_GetParameters\\(\\) | ForEach-Object { $_ParameterType.Name + '' '' + $_Name }\\) -join '', ''; $_Name + ''\\('' + $params + ''\\)'' }\")",
-      "Bash(pwsh:*)"
+      "Bash(pwsh:*)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(dotnet:*)",
+      "Bash(dotnet package search:*)",
+      "Bash(ls \"C:\\\\Users\\\\EricPatrick\\\\.nuget\\\\packages\\\\google.genai\\\\1.0.0\\\\lib\"\" 2>/dev/null || echo \"not found \")"
     ]
   }
 }

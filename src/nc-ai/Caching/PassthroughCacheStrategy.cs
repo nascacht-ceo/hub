@@ -1,5 +1,10 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using nc.Extensions;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace nc.Ai.Caching;
 
@@ -11,9 +16,15 @@ namespace nc.Ai.Caching;
 /// </summary>
 public class PassthroughCacheStrategy : ICacheStrategy
 {
-	private readonly ConcurrentDictionary<string, string> _cache = new();
+	private readonly IDistributedCache _cache;
 
-	public Task<string> CreateCacheAsync(
+	public PassthroughCacheStrategy(IDistributedCache? cache = null)
+	{
+		_cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions() { }));
+	}
+
+
+	public async Task<string> CreateCacheAsync(
 		string systemPrompt,
 		TimeSpan ttl,
 		CancellationToken cancellationToken = default)
@@ -21,20 +32,20 @@ public class PassthroughCacheStrategy : ICacheStrategy
 		ArgumentException.ThrowIfNullOrWhiteSpace(systemPrompt);
 
 		var cacheId = Guid.NewGuid().ToString("N");
-		_cache.TryAdd(cacheId, systemPrompt);
-		return Task.FromResult(cacheId);
+		await _cache.SetAsync(cacheId, systemPrompt);
+		return cacheId;
 	}
 
 	public Task DeleteCacheAsync(
 		string cacheId,
 		CancellationToken cancellationToken = default)
 	{
-		_cache.TryRemove(cacheId, out _);
-		return Task.CompletedTask;
+		return _cache.RemoveAsync(cacheId);
 	}
 
-	public IEnumerable<ChatMessage> TransformMessages(
-		IEnumerable<ChatMessage> messages)
+	public async IAsyncEnumerable<ChatMessage> TransformMessages(
+		IEnumerable<ChatMessage> messages,
+		[EnumeratorCancellation]CancellationToken cancellationToken = default)
 	{
 		foreach (var message in messages)
 		{
@@ -49,7 +60,8 @@ public class PassthroughCacheStrategy : ICacheStrategy
 			{
 				if (content is CachedPromptReference cached)
 				{
-					if (!_cache.TryGetValue(cached.CacheId, out var prompt))
+					var prompt = await _cache.GetAsync<string>(cached.CacheId);
+					if (string.IsNullOrEmpty(prompt))
 						throw new InvalidOperationException(
 							$"No cached prompt found for cache ID '{cached.CacheId}'. " +
 							"Was it deleted or never created?");

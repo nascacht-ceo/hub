@@ -36,14 +36,14 @@ public class PassthroughCacheStrategyFacts
 				new ChatMessage(ChatRole.System, [new CachedPromptReference(id2)])
 			};
 
-			var t1 = strategy.TransformMessages(messages1).ToList();
-			var t2 = strategy.TransformMessages(messages2).ToList();
+			var t1 = await strategy.TransformMessages(messages1).ToListAsync();
+			var t2 = await strategy.TransformMessages(messages2).ToListAsync();
 
 			Assert.Equal("Prompt A", ((TextContent)t1[0].Contents[0]).Text);
 			Assert.Equal("Prompt B", ((TextContent)t2[0].Contents[0]).Text);
 
 			await strategy.DeleteCacheAsync(id1);
-			var t2Again = strategy.TransformMessages(messages2).ToList();
+			var t2Again = await strategy.TransformMessages(messages2).ToListAsync();
 			Assert.Equal("Prompt B", ((TextContent)t2Again[0].Contents[0]).Text);
 		}
 	}
@@ -65,8 +65,8 @@ public class PassthroughCacheStrategyFacts
 					[new CachedPromptReference(cacheId)])
 			};
 
-			Assert.Throws<InvalidOperationException>(
-				() => strategy.TransformMessages(messages).ToList());
+			await Assert.ThrowsAsync<InvalidOperationException>(
+				async () => await strategy.TransformMessages(messages).ToListAsync());
 		}
 	}
 
@@ -88,7 +88,7 @@ public class PassthroughCacheStrategyFacts
 					[new TextContent("Analyze this document.")])
 			};
 
-			var transformed = strategy.TransformMessages(messages).ToList();
+			var transformed = await strategy.TransformMessages(messages).ToListAsync();
 
 			Assert.Equal(2, transformed.Count);
 
@@ -118,7 +118,7 @@ public class PassthroughCacheStrategyFacts
 					[new TextContent("Hello")])
 			};
 
-			var transformed = strategy.TransformMessages(messages).ToList();
+			var transformed = await strategy.TransformMessages(messages).ToListAsync();
 
 			var systemContents = transformed[0].Contents;
 			Assert.Equal(2, systemContents.Count);
@@ -129,7 +129,7 @@ public class PassthroughCacheStrategyFacts
 		}
 
 		[Fact]
-		public void ThrowsForUnknownCacheId()
+		public async Task ThrowsForUnknownCacheId()
 		{
 			var strategy = new PassthroughCacheStrategy();
 			var messages = new[]
@@ -138,8 +138,8 @@ public class PassthroughCacheStrategyFacts
 					[new CachedPromptReference("nonexistent-id")])
 			};
 
-			Assert.Throws<InvalidOperationException>(
-				() => strategy.TransformMessages(messages).ToList());
+			await Assert.ThrowsAsync<InvalidOperationException>(
+				async () => await strategy.TransformMessages(messages).ToListAsync());
 		}
 	}
 }

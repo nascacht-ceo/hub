@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using nc.Ai.Caching;
 
 namespace nc.Ai;
 
@@ -24,6 +27,8 @@ public static partial class AiServiceExtensions
 
 	private static IServiceCollection AddAiServices(this IServiceCollection services)
 	{
+		services.AddSingleton<ICacheStrategy, PassthroughCacheStrategy>();
+		services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
 		return services;
 	}
 }

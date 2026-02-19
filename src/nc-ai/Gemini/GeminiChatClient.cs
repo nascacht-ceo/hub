@@ -1,3 +1,4 @@
+using Google.Apis.Auth.OAuth2;
 using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.AI;
@@ -11,14 +12,23 @@ namespace nc.Ai.Gemini;
 /// <see cref="CreateCacheAsync"/>, then call <see cref="GetResponseAsync"/> or
 /// <see cref="GetStreamingResponseAsync"/> for each document.
 /// </summary>
-public class GeminiCachedChatClient : IChatClient
+public class GeminiChatClient : IChatClient, IAiContextClient
 {
 	private readonly Client _client;
+	private readonly IAiContextCache _contextCache;
 	private readonly string _model;
 	private string? _cachedContentName;
 
-	public GeminiCachedChatClient(Client client, string model)
+	public GeminiChatClient(IAiContextCache contextCache, string model, bool? vertexAI = null, string? apiKey = null, ICredential? credential = null, string? project = null, string? location = null, HttpOptions? httpOptions = null)
 	{
+		_contextCache = contextCache ?? throw new ArgumentNullException(nameof(contextCache));
+		_model = model;
+		_client = new Client(vertexAI, apiKey, credential, project, location, httpOptions);
+	}
+
+	public GeminiChatClient(IAiContextCache contextCache, Client client, string model)
+	{
+		_contextCache = contextCache ?? throw new ArgumentNullException(nameof(contextCache));
 		_client = client ?? throw new ArgumentNullException(nameof(client));
 		_model = model;
 	}
@@ -82,7 +92,7 @@ public class GeminiCachedChatClient : IChatClient
 		CancellationToken cancellationToken = default)
 	{
 		var contents = BuildContents(messages);
-		var config = new GenerateContentConfig { CachedContent = _cachedContentName };
+		var config = BuildConfig(options);
 
 		var response = await _client.Models.GenerateContentAsync(
 			_model, contents, config, cancellationToken);
@@ -96,14 +106,31 @@ public class GeminiCachedChatClient : IChatClient
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var contents = BuildContents(messages);
-		var config = new GenerateContentConfig { CachedContent = _cachedContentName };
+		var config = BuildConfig(options);
 
 		await foreach (var chunk in _client.Models.GenerateContentStreamAsync(
 			_model, contents, config, cancellationToken))
 		{
-			var text = chunk.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
-			if (text is not null)
-				yield return new ChatResponseUpdate(ChatRole.Assistant, text);
+			var parts = chunk.Candidates?.FirstOrDefault()?.Content?.Parts;
+			if (parts is null) continue;
+
+			foreach (var part in parts)
+			{
+				if (part.FunctionCall is { } fc)
+				{
+					yield return new ChatResponseUpdate(ChatRole.Assistant,
+					[
+						new FunctionCallContent(
+							callId: fc.Id ?? fc.Name ?? Guid.NewGuid().ToString(),
+							name: fc.Name ?? string.Empty,
+							arguments: fc.Args?.ToDictionary(k => k.Key, k => (object?)k.Value))
+					]);
+				}
+				else if (part.Text is { } text)
+				{
+					yield return new ChatResponseUpdate(ChatRole.Assistant, text);
+				}
+			}
 		}
 	}
 
@@ -111,13 +138,38 @@ public class GeminiCachedChatClient : IChatClient
 
 	public object? GetService(System.Type serviceType, object? serviceKey = null)
 	{
-		if (serviceType == typeof(GeminiCachedChatClient)) return this;
+		if (serviceType == typeof(GeminiChatClient)) return this;
 		return null;
+	}
+
+	private GenerateContentConfig BuildConfig(ChatOptions? options)
+	{
+		var config = new GenerateContentConfig { CachedContent = _cachedContentName };
+
+		if (options?.Tools is { Count: > 0 } tools)
+		{
+			var declarations = tools
+				.OfType<AIFunction>()
+				.Select(f => new FunctionDeclaration
+				{
+					Name = f.Name,
+					Description = f.Description,
+					ParametersJsonSchema = f.JsonSchema
+				})
+				.ToList();
+
+			if (declarations.Count > 0)
+				config.Tools = [new Tool { FunctionDeclarations = declarations }];
+		}
+
+		return config;
 	}
 
 	private static List<Content> BuildContents(IEnumerable<ChatMessage> messages)
 	{
 		var contents = new List<Content>();
+		var callIdToName = new Dictionary<string, string>();
+
 		foreach (var message in messages)
 		{
 			var parts = new List<Part>();
@@ -128,6 +180,33 @@ public class GeminiCachedChatClient : IChatClient
 					case TextContent text:
 						parts.Add(new Part { Text = text.Text });
 						break;
+					case FunctionCallContent fc:
+						callIdToName[fc.CallId] = fc.Name;
+						parts.Add(new Part
+						{
+							FunctionCall = new FunctionCall
+							{
+								Id = fc.CallId,
+								Name = fc.Name,
+								Args = fc.Arguments?.ToDictionary(k => k.Key, k => k.Value ?? (object)string.Empty)
+							}
+						});
+						break;
+					case FunctionResultContent result:
+						var funcName = callIdToName.TryGetValue(result.CallId, out var n) ? n : result.CallId;
+						parts.Add(new Part
+						{
+							FunctionResponse = new FunctionResponse
+							{
+								Id = result.CallId,
+								Name = funcName,
+								Response = new Dictionary<string, object>
+								{
+									{ "output", result.Result ?? string.Empty }
+								}
+							}
+						});
+						break;
 					case UriContent uri when uri.Uri is not null:
 						parts.Add(new Part
 						{
@@ -135,6 +214,16 @@ public class GeminiCachedChatClient : IChatClient
 							{
 								MimeType = uri.MediaType,
 								FileUri = uri.Uri.ToString()
+							}
+						});
+						break;
+					case HostedFileContent hosted:
+						parts.Add(new Part
+						{
+							FileData = new FileData
+							{
+								MimeType = hosted.MediaType,
+								FileUri = hosted.FileId
 							}
 						});
 						break;
@@ -151,9 +240,10 @@ public class GeminiCachedChatClient : IChatClient
 				}
 			}
 
+			var role = message.Role == ChatRole.Assistant ? "model" : "user";
 			contents.Add(new Content
 			{
-				Role = message.Role == ChatRole.User ? "user" : "model",
+				Role = role,
 				Parts = parts
 			});
 		}
@@ -164,9 +254,27 @@ public class GeminiCachedChatClient : IChatClient
 	private static ChatResponse ToClientResponse(GenerateContentResponse response)
 	{
 		var candidate = response.Candidates?.FirstOrDefault();
-		var text = candidate?.Content?.Parts?.FirstOrDefault()?.Text ?? string.Empty;
+		var messageParts = new List<AIContent>();
 
-		return new ChatResponse(new ChatMessage(ChatRole.Assistant, text))
+		foreach (var part in candidate?.Content?.Parts ?? [])
+		{
+			if (part.FunctionCall is { } fc)
+			{
+				messageParts.Add(new FunctionCallContent(
+					callId: fc.Id ?? fc.Name ?? Guid.NewGuid().ToString(),
+					name: fc.Name ?? string.Empty,
+					arguments: fc.Args?.ToDictionary(k => k.Key, k => (object?)k.Value)));
+			}
+			else if (part.Text is { } text)
+			{
+				messageParts.Add(new TextContent(text));
+			}
+		}
+
+		if (messageParts.Count == 0)
+			messageParts.Add(new TextContent(string.Empty));
+
+		return new ChatResponse(new ChatMessage(ChatRole.Assistant, messageParts))
 		{
 			Usage = response.UsageMetadata is { } usage ? new UsageDetails
 			{

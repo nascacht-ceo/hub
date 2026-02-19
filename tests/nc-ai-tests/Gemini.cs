@@ -1,29 +1,38 @@
-﻿using GeminiDotnet;
-using GeminiDotnet.Extensions.AI;
-using Google.Cloud.AIPlatform.V1;
+﻿using Google.Cloud.AIPlatform.V1;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Graph.Models;
+using Microsoft.Extensions.DependencyInjection;
+using nc.Ai.Gemini;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace nc.Ai.Tests;
 
 public class Gemini : CommonTests
 {
+	private readonly IAiContextCache _cache;
 
-	public IConfigurationSection Configuration { get; }
-	public GeminiClientOptions Options { get; }
+	public IConfiguration Configuration { get; }
+	// public GeminiClientOptions Options { get; }
 
 	public Gemini()
 	{
 		Configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
 			.AddEnvironmentVariables("nc_hub__")
-			.Build()
-			.GetSection("tests:nc_ai_tests:gemini");
+			.Build();
+			// .GetSection("tests:nc_ai_tests:gemini");
 
-		Options = new GeminiClientOptions { ApiKey = Configuration["apikey"]!, ModelId = Configuration["model"] };
-		Options.ModelId = "gemini-2.5-pro"; // "gemini -1.5-pro-latest";
-		Client = new GeminiChatClient(Options);
+		var services = new ServiceCollection()
+			.Configure<AiContextCacheOptions>(Configuration.GetSection("tests:nc_ai_tests"))
+			.AddSingleton<IDistributedCache, MemoryDistributedCache>()
+			.AddSingleton<IAiContextCache, AiContextCache>()
+			.BuildServiceProvider();
+		_cache = services.GetRequiredService<IAiContextCache>();
+
+		//Options = new GeminiClientOptions { ApiKey = Configuration["apikey"]!, ModelId = Configuration["model"] };
+		//Options.ModelId = "gemini-2.5-pro"; // "gemini -1.5-pro-latest";
+		Client = new GeminiChatClient(_cache, "gemini-2.5-pro", apiKey: Configuration["tests:nc_ai_tests:gemini:apikey"]);
 
 		//Client = new ChatClient(Configuration["model"], Configuration["secretkey"])
 		//	.AsIChatClient();
@@ -114,23 +123,23 @@ public class Gemini : CommonTests
 	//	Assert.True(answer.Contains("sunny") || answer.Contains("raining"));
 	//}
 
-	[Fact]
+	//[Fact]
 
-	public async Task Embedding()
-	{
-		var options = new GeminiClientOptions
-		{
-			ApiKey = Configuration["apikey"]!,
-			ModelId = Configuration["embeddingmodel"]!
-		};
-		IEmbeddingGenerator<string, Embedding<float>> generator =
-			new GeminiEmbeddingGenerator(options);
+	//public async Task Embedding()
+	//{
+	//	var options = new GeminiClientOptions
+	//	{
+	//		ApiKey = Configuration["apikey"]!,
+	//		ModelId = Configuration["embeddingmodel"]!
+	//	};
+	//	IEmbeddingGenerator<string, Embedding<float>> generator =
+	//		new GeminiEmbeddingGenerator(options);
 
-		var embeddings = await generator.GenerateAsync("What is AI?");
-		Assert.NotNull(embeddings);
-		var vectors = string.Join(", ", embeddings.Vector.ToArray());
-		Assert.NotEmpty(vectors);
-	}
+	//	var embeddings = await generator.GenerateAsync("What is AI?");
+	//	Assert.NotNull(embeddings);
+	//	var vectors = string.Join(", ", embeddings.Vector.ToArray());
+	//	Assert.NotEmpty(vectors);
+	//}
 
 	//[Fact]
 	//public async Task FileAnalysis()

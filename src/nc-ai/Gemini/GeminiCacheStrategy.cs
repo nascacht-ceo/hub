@@ -1,10 +1,11 @@
 using Microsoft.Extensions.AI;
 using nc.Ai.Caching;
+using System.Runtime.CompilerServices;
 
 namespace nc.Ai.Gemini;
 
 /// <summary>
-/// Cache strategy for Google Gemini. Delegates to <see cref="GeminiCachedChatClient"/>
+/// Cache strategy for Google Gemini. Delegates to <see cref="GeminiChatClient"/>
 /// for server-side explicit context caching (75-90% cost reduction on cached tokens).
 /// Falls back to <see cref="PassthroughCacheStrategy"/> when the prompt is below
 /// Gemini's 2,048-token minimum (estimated via word count).
@@ -17,19 +18,20 @@ public class GeminiCacheStrategy : ICacheStrategy
 	/// </summary>
 	internal const int MinWordCount = 2048;
 
-	private readonly GeminiCachedChatClient _cachedClient;
-	private readonly PassthroughCacheStrategy _fallback = new();
+	private readonly GeminiChatClient _cachedClient;
+	private readonly PassthroughCacheStrategy _fallback;
 	private bool _usingFallback;
 
 	/// <param name="cachedClient">
-	/// The <see cref="GeminiCachedChatClient"/> instance that is also the
+	/// The <see cref="GeminiChatClient"/> instance that is also the
 	/// inner client in the pipeline. Must be the same instance that
 	/// <see cref="CachedChatClient"/> delegates to.
 	/// </param>
-	public GeminiCacheStrategy(GeminiCachedChatClient cachedClient)
+	public GeminiCacheStrategy(GeminiChatClient cachedClient, PassthroughCacheStrategy fallback)
 	{
 		ArgumentNullException.ThrowIfNull(cachedClient);
 		_cachedClient = cachedClient;
+		_fallback = fallback;
 	}
 
 	public async Task<string> CreateCacheAsync(
@@ -60,16 +62,18 @@ public class GeminiCacheStrategy : ICacheStrategy
 			await _cachedClient.DeleteCacheAsync(cancellationToken);
 	}
 
-	public IEnumerable<ChatMessage> TransformMessages(
-		IEnumerable<ChatMessage> messages)
+	public IAsyncEnumerable<ChatMessage> TransformMessages(
+		IEnumerable<ChatMessage> messages,
+		CancellationToken cancellationToken = default)	
 	{
 		return _usingFallback
-			? _fallback.TransformMessages(messages)
-			: StripCachedReferences(messages);
+			? _fallback.TransformMessages(messages, cancellationToken)
+			: StripCachedReferences(messages, cancellationToken);
 	}
 
-	private static IEnumerable<ChatMessage> StripCachedReferences(
-		IEnumerable<ChatMessage> messages)
+	private static async IAsyncEnumerable<ChatMessage> StripCachedReferences(
+		IEnumerable<ChatMessage> messages,
+		[EnumeratorCancellation]CancellationToken cancellationToken = default)
 	{
 		foreach (var message in messages)
 		{
