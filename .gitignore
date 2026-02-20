@@ -334,3 +334,5 @@ ASALocalRun/
 **/src/**/*.d.ts
 /samples/aws-lambda/aws-lambda.lambda.zip
 /aws-trust-policy.json
+/private_key.pem
+/public_key.pem
