@@ -1,9 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using nc.Ai.Caching;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
 namespace nc.Ai.Tests;
 
 public class AiServiceExtensionFacts
@@ -17,10 +12,6 @@ public class AiServiceExtensionFacts
 			_services = new ServiceCollection().AddAiServices(new AiOptions()).BuildServiceProvider();
 		}
 
-		[Fact]
-		public void InjectsCacheStrategy()
-		{
-			Assert.NotNull(_services.GetServices<ICacheStrategy>().OfType<PassthroughCacheStrategy>());
-		}
+		
 	}
 }

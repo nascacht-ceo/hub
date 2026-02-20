@@ -1,89 +1,48 @@
-using Google.Apis.Auth.OAuth2;
 using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace nc.Ai.Gemini;
 
 /// <summary>
-/// An <see cref="IChatClient"/> that uses Gemini's explicit context caching to avoid
-/// re-sending a large system instruction on every request. Create the cache once via
-/// <see cref="CreateCacheAsync"/>, then call <see cref="GetResponseAsync"/> or
-/// <see cref="GetStreamingResponseAsync"/> for each document.
+/// An <see cref="IChatClient"/> implementation for Google Gemini.
+/// When <see cref="ChatOptions.Instructions"/> is set, instructions are
+/// transparently cached via <c>Client.Caches</c> when they meet Gemini's
+/// minimum token threshold, reducing cost and latency on subsequent calls
+/// with the same instruction set. Short instructions are passed inline as
+/// <c>SystemInstruction</c>.
 /// </summary>
-public class GeminiChatClient : IChatClient, IAiContextClient
+public class GeminiChatClient : IChatClient
 {
+	internal const int MinInstructionWords = 2048;
+
 	private readonly Client _client;
-	private readonly IAiContextCache _contextCache;
 	private readonly string _model;
-	private string? _cachedContentName;
+	private readonly TimeSpan _cacheTtl;
+	private readonly IDistributedCache _instructionCache;
 
-	public GeminiChatClient(IAiContextCache contextCache, string model, bool? vertexAI = null, string? apiKey = null, ICredential? credential = null, string? project = null, string? location = null, HttpOptions? httpOptions = null)
+	public GeminiChatClient(GeminiChatClientOptions options, IDistributedCache? cache = null)
 	{
-		_contextCache = contextCache ?? throw new ArgumentNullException(nameof(contextCache));
-		_model = model;
-		_client = new Client(vertexAI, apiKey, credential, project, location, httpOptions);
+		ArgumentNullException.ThrowIfNull(options);
+		_model = options.Model;
+		_cacheTtl = options.CacheTtl;
+		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+		_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, options.HttpOptions);
 	}
 
-	public GeminiChatClient(IAiContextCache contextCache, Client client, string model)
+	public GeminiChatClient(Client client, GeminiChatClientOptions options, IDistributedCache? cache = null)
 	{
-		_contextCache = contextCache ?? throw new ArgumentNullException(nameof(contextCache));
+		ArgumentNullException.ThrowIfNull(options);
 		_client = client ?? throw new ArgumentNullException(nameof(client));
-		_model = model;
-	}
-
-	/// <summary>
-	/// The resource name of the active cached content (e.g. "cachedContents/abc123"),
-	/// or null if no cache has been created yet.
-	/// </summary>
-	public string? CachedContentName => _cachedContentName;
-
-	/// <summary>
-	/// Creates a cached content resource from a system instruction.
-	/// Subsequent calls to <see cref="GetResponseAsync"/> will reference this cache
-	/// instead of re-sending the instruction.
-	/// </summary>
-	/// <param name="systemInstruction">The large prompt to cache.</param>
-	/// <param name="ttl">Cache time-to-live (e.g. "3600s"). Defaults to 1 hour.</param>
-	/// <param name="displayName">Optional display name for the cache entry.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The cached content resource name.</returns>
-	public async Task<string> CreateCacheAsync(
-		string systemInstruction,
-		string ttl = "3600s",
-		string? displayName = null,
-		CancellationToken cancellationToken = default)
-	{
-		var config = new CreateCachedContentConfig
-		{
-			SystemInstruction = new Content
-			{
-				Parts = [new Part { Text = systemInstruction }]
-			},
-			Ttl = ttl,
-			DisplayName = displayName
-		};
-
-		var cachedContent = await _client.Caches.CreateAsync(
-			_model, config, cancellationToken);
-
-		_cachedContentName = cachedContent.Name
-			?? throw new InvalidOperationException("Gemini did not return a cached content name.");
-
-		return _cachedContentName;
-	}
-
-	/// <summary>
-	/// Deletes the active cached content resource.
-	/// </summary>
-	public async Task DeleteCacheAsync(CancellationToken cancellationToken = default)
-	{
-		if (_cachedContentName is null) return;
-
-		await _client.Caches.DeleteAsync(
-			_cachedContentName, cancellationToken: cancellationToken);
-		_cachedContentName = null;
+		_model = options.Model;
+		_cacheTtl = options.CacheTtl;
+		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 	}
 
 	public async Task<ChatResponse> GetResponseAsync(
@@ -92,7 +51,7 @@ public class GeminiChatClient : IChatClient, IAiContextClient
 		CancellationToken cancellationToken = default)
 	{
 		var contents = BuildContents(messages);
-		var config = BuildConfig(options);
+		var config = await BuildConfigAsync(options, cancellationToken);
 
 		var response = await _client.Models.GenerateContentAsync(
 			_model, contents, config, cancellationToken);
@@ -106,7 +65,7 @@ public class GeminiChatClient : IChatClient, IAiContextClient
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var contents = BuildContents(messages);
-		var config = BuildConfig(options);
+		var config = await BuildConfigAsync(options, cancellationToken);
 
 		await foreach (var chunk in _client.Models.GenerateContentStreamAsync(
 			_model, contents, config, cancellationToken))
@@ -142,9 +101,9 @@ public class GeminiChatClient : IChatClient, IAiContextClient
 		return null;
 	}
 
-	private GenerateContentConfig BuildConfig(ChatOptions? options)
+	private async Task<GenerateContentConfig> BuildConfigAsync(ChatOptions? options, CancellationToken cancellationToken)
 	{
-		var config = new GenerateContentConfig { CachedContent = _cachedContentName };
+		var config = new GenerateContentConfig();
 
 		if (options?.Tools is { Count: > 0 } tools)
 		{
@@ -162,7 +121,42 @@ public class GeminiChatClient : IChatClient, IAiContextClient
 				config.Tools = [new Tool { FunctionDeclarations = declarations }];
 		}
 
+		if (options?.Instructions is { Length: > 0 } instructions)
+		{
+			var wordCount = instructions.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+			if (wordCount >= MinInstructionWords)
+				config.CachedContent = await GetOrCreateCacheNameAsync(instructions, cancellationToken);
+			else
+				config.SystemInstruction = new Content { Parts = [new Part { Text = instructions }] };
+		}
+
 		return config;
+	}
+
+	private async Task<string> GetOrCreateCacheNameAsync(string instructions, CancellationToken cancellationToken)
+	{
+		var hash = ComputeHash(instructions);
+		var existing = await _instructionCache.GetStringAsync(hash, cancellationToken);
+		if (existing is not null)
+			return existing;
+
+		var result = await _client.Caches.CreateAsync(_model, new CreateCachedContentConfig
+		{
+			SystemInstruction = new Content { Parts = [new Part { Text = instructions }] },
+			Ttl = $"{(int)_cacheTtl.TotalSeconds}s"
+		}, cancellationToken);
+
+		var name = result.Name ?? throw new InvalidOperationException("Gemini did not return a cached content name.");
+		await _instructionCache.SetStringAsync(hash, name,
+			new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _cacheTtl },
+			cancellationToken);
+		return name;
+	}
+
+	private static string ComputeHash(string text)
+	{
+		var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+		return Convert.ToHexString(bytes);
 	}
 
 	private static List<Content> BuildContents(IEnumerable<ChatMessage> messages)
@@ -241,11 +235,7 @@ public class GeminiChatClient : IChatClient, IAiContextClient
 			}
 
 			var role = message.Role == ChatRole.Assistant ? "model" : "user";
-			contents.Add(new Content
-			{
-				Role = role,
-				Parts = parts
-			});
+			contents.Add(new Content { Role = role, Parts = parts });
 		}
 
 		return contents;
