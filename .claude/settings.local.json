@@ -32,7 +32,8 @@
       "Bash(ls:*)",
       "Bash(cmd /c \"dir /s /b C:\\\\Users\\\\EricPatrick\\\\.nuget\\\\packages\\\\google.genai 2>nul | head\")",
       "Bash(cmd /c \"dir /s /b \"\"%USERPROFILE%\\\\.nuget\\\\packages\\\\google.genai\"\" 2>nul\")",
-      "Bash(cmd /c \"dir \"\"%USERPROFILE%\\\\.nuget\\\\packages\"\" /AD /B 2>nul\")"
+      "Bash(cmd /c \"dir \"\"%USERPROFILE%\\\\.nuget\\\\packages\"\" /AD /B 2>nul\")",
+      "Bash(Select-String -Pattern \"error|Error\")"
     ]
   }
 }

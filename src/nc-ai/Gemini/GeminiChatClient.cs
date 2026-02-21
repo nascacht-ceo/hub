@@ -27,16 +27,17 @@ public class GeminiChatClient : IChatClient
 	private readonly TimeSpan _cacheTtl;
 	private readonly IDistributedCache _instructionCache;
 
-	public GeminiChatClient(GeminiChatClientOptions options, IDistributedCache? cache = null)
+	public GeminiChatClient(GeminiAgent options, IDistributedCache? cache = null)
 	{
 		ArgumentNullException.ThrowIfNull(options);
+		ArgumentException.ThrowIfNullOrEmpty(options.Model, nameof(options.Model));
 		_model = options.Model;
 		_cacheTtl = options.CacheTtl;
 		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 		_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, options.HttpOptions);
 	}
 
-	public GeminiChatClient(Client client, GeminiChatClientOptions options, IDistributedCache? cache = null)
+	public GeminiChatClient(Client client, GeminiAgent options, IDistributedCache? cache = null)
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		_client = client ?? throw new ArgumentNullException(nameof(client));
@@ -135,7 +136,7 @@ public class GeminiChatClient : IChatClient
 
 	private async Task<string> GetOrCreateCacheNameAsync(string instructions, CancellationToken cancellationToken)
 	{
-		var hash = ComputeHash(instructions);
+		var hash = ComputeCacheKey(instructions);
 		var existing = await _instructionCache.GetStringAsync(hash, cancellationToken);
 		if (existing is not null)
 			return existing;
@@ -153,10 +154,10 @@ public class GeminiChatClient : IChatClient
 		return name;
 	}
 
-	private static string ComputeHash(string text)
+	private string ComputeCacheKey(string text)
 	{
 		var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
-		return Convert.ToHexString(bytes);
+		return $"{_model}:{Convert.ToHexString(bytes)}";
 	}
 
 	private static List<Content> BuildContents(IEnumerable<ChatMessage> messages)

@@ -26,4 +26,10 @@
     <ProjectReference Include="..\nc-extensions\nc-extensions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Anthropic\" />
+    <Folder Include="Azure\" />
+    <Folder Include="Bedrock\" />
+  </ItemGroup>
+
 </Project>

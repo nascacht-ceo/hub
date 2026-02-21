@@ -1,3 +1,43 @@
 {
+  "nc": {
+    "ai": {
+      "gemini": {
+        "gemini-flash": {
+          "model": "gemini-2.0-flash",
+          "apiKey": ""
+        },
+        "gemini-pro": {
+          "model": "gemini-2.5-pro",
+          "apiKey": "",
+          "cacheTtl": "01:00:00"
+        },
+        "gemini-vertex": {
+          "model": "gemini-2.5-pro",
+          "vertexAI": true,
+          "project": "",
+          "location": "us-central1"
+        }
+      },
+      "anthropic": {
+        "claude-2": {
+          "model": "claude-2",
+          "apiKey": ""
+        },
+        "claude-instant-100k": {
+          "model": "claude-instant-100"
+        }
+      },
+      "openai": {
+        "gpt-4o": {
+          "model": "gpt-4o"
+        }
+      },
+      "azure": {
 
+      },
+      "bedrock": {
+
+      }
+    }
+  }
 }

@@ -11,6 +11,7 @@
     <File Path="nuget.config" />
     <File Path="readme.md" />
   </Folder>
+  <Folder Name="/Solution Items/.claude/" />
   <Folder Name="/Solution Items/.github/" />
   <Folder Name="/Solution Items/.github/actions/" />
   <Folder Name="/Solution Items/.github/actions/build/">

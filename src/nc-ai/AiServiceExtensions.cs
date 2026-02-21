@@ -8,8 +8,8 @@ namespace nc.Ai;
 
 public static partial class AiServiceExtensions
 {
-	public const string ConfigSection = "Ai";
-	public static IServiceCollection AddAiServices(this IServiceCollection services, IConfiguration configuration)
+	public const string ConfigSection = "ai";
+	public static IServiceCollection AddNascachtAiServices(this IServiceCollection services, IConfiguration configuration)
 	{
 		var section = configuration.GetSection(ConfigSection);
 		services.Configure<AiOptions>(section);

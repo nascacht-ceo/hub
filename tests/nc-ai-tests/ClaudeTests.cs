@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace nc.Ai.Tests;
 
-public class Claude: CommonTests
+public class ClaudeTests: CommonTests
 {
 	public IConfigurationSection Configuration { get; }
 
-	public Claude()
+	public ClaudeTests()
 	{
 		Configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")

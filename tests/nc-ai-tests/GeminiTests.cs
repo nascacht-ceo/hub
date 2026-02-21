@@ -17,7 +17,7 @@ public class GeminiTests : CommonTests
 			.AddEnvironmentVariables("nc_hub__")
 			.Build();
 
-		Client = new GeminiChatClient(new GeminiChatClientOptions
+		Client = new GeminiChatClient(new GeminiAgent
 		{
 			Model = "gemini-2.5-pro",
 			ApiKey = Configuration["tests:nc_ai_tests:gemini:apikey"]
