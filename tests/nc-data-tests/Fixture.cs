@@ -11,7 +11,9 @@ public class Fixture : IAsyncLifetime
 	{
 		SqlContainer = new MsSqlBuilder("chriseaton/adventureworks:latest")
 			.WithPassword("nc_Test_Pipeline1!")
-			.WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("(/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'nc_Test_Pipeline1!' -C -Q 'SELECT name FROM sys.databases' | grep AdventureWorks)"))
+			.WithWaitStrategy(Wait.ForUnixContainer()
+				.UntilInternalTcpPortIsAvailable(1433)
+				.UntilMessageIsLogged("Server is ready."))
 			.Build();
 		TypeService = new TypeService();
 	}

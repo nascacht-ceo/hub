@@ -34,7 +34,9 @@ public class GeminiChatClient : IChatClient
 		_model = options.Model;
 		_cacheTtl = options.CacheTtl;
 		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
-		_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, options.HttpOptions);
+		var httpOptions = options.HttpOptions
+			?? (options.Timeout is { } t ? new HttpOptions { Timeout = (int)t.TotalMilliseconds } : null);
+		_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, httpOptions);
 	}
 
 	public GeminiChatClient(Client client, GeminiAgent options, IDistributedCache? cache = null)

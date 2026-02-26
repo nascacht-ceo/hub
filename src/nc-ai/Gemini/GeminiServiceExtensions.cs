@@ -17,6 +17,7 @@ public static partial class AiServiceExtensions
 		Action<GeminiAgent> configure)
 	{
 		services.Configure<GeminiAgent>(name, configure);
+		services.AddSingleton(new AgentRegistration(name, sp => sp.GetRequiredService<IChatClientFactory<GeminiAgent>>()));
 		return services.AddAiGemini();
 	}
 
@@ -26,25 +27,27 @@ public static partial class AiServiceExtensions
 		IConfiguration configuration)
 	{
 		services.Configure<GeminiAgent>(name, configuration);
+		services.AddSingleton(new AgentRegistration(name, sp => sp.GetRequiredService<IChatClientFactory<GeminiAgent>>()));
 		return services.AddAiGemini();
 	}
 
 	private static IServiceCollection AddAiGemini(this IServiceCollection services, IConfiguration configuration)
 	{
-		services.Configure<GeminiOptions>(configuration);
+		// services.Configure<GeminiOptions>(configuration);
 		return services.AddAiGemini();
 	}
 
-	private static IServiceCollection AddAiGemini(this IServiceCollection services, GeminiOptions options)
-	{
-		services.AddSingleton(Options.Create(options));
-		return services.AddAiGemini();
-	}
+	//private static IServiceCollection AddAiGemini(this IServiceCollection services, GeminiOptions options)
+	//{
+	//	services.AddSingleton(Options.Create(options));
+	//	return services.AddAiGemini();
+	//}
 
 	private static IServiceCollection AddAiGemini(this IServiceCollection services)
 	{
 		services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
 		services.TryAddSingleton<IChatClientFactory<GeminiAgent>, GeminiClientFactory>();
+		services.TryAddSingleton<IAgentManager, AgentManager>();
 		return services;
 	}
 }

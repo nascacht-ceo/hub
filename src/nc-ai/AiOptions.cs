@@ -9,5 +9,5 @@ namespace nc.Ai;
 
 public class AiOptions
 {
-	public GeminiOptions Gemini { get; set; } = new GeminiOptions();
+	// public GeminiOptions Gemini { get; set; } = new GeminiOptions();
 }

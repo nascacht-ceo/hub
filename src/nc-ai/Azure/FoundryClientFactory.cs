@@ -1,17 +1,13 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using nc.Ai.Interfaces;
 using System.Collections.Concurrent;
 
-namespace nc.Ai.Gemini;
+namespace nc.Ai.Azure;
 
-internal sealed class GeminiClientFactory(
-	IOptionsMonitor<GeminiAgent> options,
-	IDistributedCache cache) : IChatClientFactory<GeminiAgent>
+internal sealed class FoundryClientFactory(IOptionsMonitor<FoundryAgent> options) : IChatClientFactory<FoundryAgent>
 {
-	internal const string ConfigSection = "nc:ai:gemini";
+	internal const string ConfigSection = "nc:ai:azure";
 
 	private readonly ConcurrentDictionary<string, IChatClient> _clients = new();
 
@@ -23,10 +19,7 @@ internal sealed class GeminiClientFactory(
 	private IChatClient Resolve(string name)
 	{
 		var agent = options.Get(name);
-		IChatClient client = new GeminiChatClient(agent, cache);
-
-		if (agent.RetryCount > 0)
-			client = new RetryChatClient(client, agent.RetryCount);
+		IChatClient client = new FoundryChatClient(agent);
 
 		if (agent.Instructions is { } agentInstructions)
 			client = new InstructionsChatClient(client, agentInstructions);

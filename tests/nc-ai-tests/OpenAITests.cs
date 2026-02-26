@@ -1,60 +1,47 @@
-﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using OpenAI.Chat;
+using Microsoft.Extensions.DependencyInjection;
+using nc.Ai.Interfaces;
+using nc.Ai.OpenAI;
 using OpenAI.Embeddings;
-using System.Text;
 
 namespace nc.Ai.Tests;
 
-public class OpenAITests: CommonTests
+public class OpenAITests : CommonTests, IAsyncLifetime
 {
-	public IConfigurationSection Configuration { get; }
+	private readonly IConfigurationSection _configuration;
+	private readonly ServiceProvider _services;
 
 	public OpenAITests()
 	{
-		Configuration = new ConfigurationBuilder()
+		_configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
 			.AddEnvironmentVariables("nc_hub__")
 			.Build()
 			.GetSection("tests:nc_ai_tests:openai");
 
-		Client = new ChatClient(Configuration["model"], Configuration["secretkey"])
-			.AsIChatClient();
+		_services = new ServiceCollection()
+			.AddAiOpenAI("default", opts =>
+			{
+				opts.Model = _configuration["model"] ?? "gpt-4o";
+				opts.ApiKey = _configuration["secretkey"];
+			})
+			.BuildServiceProvider();
 	}
 
-	//[Fact]
-	//public async Task Sample()
-	//{
-	//	var response = await Client.GetResponseAsync("What is AI?");
-	//	Assert.NotNull(response);
-	//}
+	public Task InitializeAsync()
+	{
+		Client = _services.GetRequiredService<IAgentManager>().GetChatClient("default");
+		return Task.CompletedTask;
+	}
 
-	//[Fact]
-	//public async Task FunctionCalling()
-	//{
-	//	ChatOptions chatOptions = new()
-	//	{
-	//		Tools = [AIFunctionFactory.Create(Functions.GetWeather)],
-			
-	//	};
-	//	var client = ChatClientBuilderChatClientExtensions
-	//		.AsBuilder(Client)
-	//		.UseFunctionInvocation()
-	//		.Build();
-	//	var response = new StringBuilder();
-	//	await foreach (var message in client.GetStreamingResponseAsync("What is the weather? Do I need an umbrella?", chatOptions))
-	//	{
-	//		response.AppendLine(message.Text );
-	//	}
-	//	Assert.NotNull(response.ToString());
-	//}
+	public async Task DisposeAsync() => await _services.DisposeAsync();
 
 	[Fact]
-
 	public async Task Embedding()
 	{
 		IEmbeddingGenerator<string, Embedding<float>> generator =
-			new EmbeddingClient(Configuration["embeddingmodel"], Configuration["secretkey"])
+			new EmbeddingClient(_configuration["embeddingmodel"], _configuration["secretkey"])
 				.AsIEmbeddingGenerator();
 
 		var embeddings = await generator.GenerateAsync("What is AI?");
@@ -63,17 +50,4 @@ public class OpenAITests: CommonTests
 		var vectors = string.Join(", ", embeddings.Vector.ToArray());
 		Assert.NotEmpty(vectors);
 	}
-
-	//[Fact]
-	//public async Task FileAnalysis()
-	//{
-	//	var file = new UriContent("https://nascacht-io-sample.s3.us-east-1.amazonaws.com/financial/w2.pdf", "application/pdf");
-	//	var question = new TextContent("What is the total amount in box 1?");
-	//	var userMessage = new Microsoft.Extensions.AI.ChatMessage(
-	//		ChatRole.User,
-	//		new List<AIContent> { file, question } // Combining text and file content
-	//	);
-	//	var response = await Client.GetResponseAsync(new[] { userMessage });
-
-	//}
 }

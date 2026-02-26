@@ -1,62 +1,36 @@
-﻿using Anthropic.SDK;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using nc.Ai.Anthropic;
+using nc.Ai.Interfaces;
 
 namespace nc.Ai.Tests;
 
-public class ClaudeTests: CommonTests
+public class ClaudeTests : CommonTests, IAsyncLifetime
 {
-	public IConfigurationSection Configuration { get; }
+	private readonly ServiceProvider _services;
 
 	public ClaudeTests()
 	{
-		Configuration = new ConfigurationBuilder()
+		var configuration = new ConfigurationBuilder()
 			.AddUserSecrets("nc-hub")
 			.AddEnvironmentVariables("nc_hub__")
 			.Build()
 			.GetSection("tests:nc_ai_tests:claude");
 
-		Client = new AnthropicClient(apiKeys: Configuration["apikey"]).Messages
-			.AsBuilder()
-			.ConfigureOptions(opts => opts.ModelId ??= Configuration["model"])
-			.Use(inner => new UriContentDownloader(inner))
-			.Build();
+		_services = new ServiceCollection()
+			.AddAiClaude("default", opts =>
+			{
+				opts.Model = configuration["model"] ?? "claude-opus-4-5";
+				opts.ApiKey = configuration["apikey"];
+			})
+			.BuildServiceProvider();
 	}
 
-	//[Fact]
-	//public async Task Sample()
-	//{
-	//	var response = await Client.GetResponseAsync("What is AI?", new ChatOptions()
-	//	{
-	//		ModelId = Configuration["model"]!
-	//	});
-	//	Assert.NotNull(response);
-	//}
+	public Task InitializeAsync()
+	{
+		Client = _services.GetRequiredService<IAgentManager>().GetChatClient("default");
+		return Task.CompletedTask;
+	}
 
-	//[Fact]
-	//public async Task FunctionCalling()
-	//{
-	//	ChatOptions chatOptions = new()
-	//	{
-	//		Tools = [AIFunctionFactory.Create(Functions.GetWeather)],
-	//		ModelId = Configuration["model"]!
-	//	};
-	//	var client = ChatClientBuilderChatClientExtensions
-	//		.AsBuilder(Client)
-	//		.UseFunctionInvocation()
-	//		.Build();
-	//	var response = new StringBuilder();
-	//	await foreach (var message in client.GetStreamingResponseAsync("What is the weather? Do I need an umbrella?", chatOptions))
-	//	{
-	//		response.AppendLine(message.Text);
-	//	}
-	//	Assert.NotNull(response.ToString());
-	//}
-
-	//[Fact(Skip ="Anthropic does not provide an embeddings endpoint.")]
-
-	//public async Task Embedding()
-	//{
-
-	//}
+	public async Task DisposeAsync() => await _services.DisposeAsync();
 }

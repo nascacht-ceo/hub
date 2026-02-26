@@ -9,6 +9,8 @@ public record GeminiAgent: IAgent
 {
 	public string Model { get; set; } = string.Empty;
 	public TimeSpan CacheTtl { get; set; } = TimeSpan.FromHours(1);
+	public TimeSpan? Timeout { get; set; }
+	public int RetryCount { get; set; } = 0;
 	public bool? VertexAI { get; set; }
 	public string? ApiKey { get; set; }
 	public ICredential? Credential { get; set; }

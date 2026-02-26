@@ -33,7 +33,23 @@
       "Bash(cmd /c \"dir /s /b C:\\\\Users\\\\EricPatrick\\\\.nuget\\\\packages\\\\google.genai 2>nul | head\")",
       "Bash(cmd /c \"dir /s /b \"\"%USERPROFILE%\\\\.nuget\\\\packages\\\\google.genai\"\" 2>nul\")",
       "Bash(cmd /c \"dir \"\"%USERPROFILE%\\\\.nuget\\\\packages\"\" /AD /B 2>nul\")",
-      "Bash(Select-String -Pattern \"error|Error\")"
+      "Bash(Select-String -Pattern \"error|Error\")",
+      "Bash(head:*)",
+      "Bash(az cognitiveservices:*)",
+      "Bash(az role:*)",
+      "Bash(az account set --subscription 5469cdf5-3dfa-4c47-b8d9-cbc6dd393a29 2>&1 && az role assignment create --assignee 319d36aa-69e8-42db-98be-5a87458a7c90 --role \"Azure AI User\" --scope \"/subscriptions/5469cdf5-3dfa-4c47-b8d9-cbc6dd393a29/resourceGroups/qbo4/providers/Microsoft.CognitiveServices/accounts/qbo4-ai\" 2>&1)",
+      "Bash(az account:*)",
+      "Bash(az resource:*)",
+      "Bash(MSYS_NO_PATHCONV=1 az role:*)",
+      "Bash(MSYS_NO_PATHCONV=1 az resource:*)",
+      "Bash(curl:*)",
+      "Bash(docker run:*)",
+      "Bash(sleep 10 && docker exec aw_test sh -c \"/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'nc_Test_Pipeline1!' -C -Q 'SELECT name FROM sys.databases' | grep AdventureWorks; echo exit:$?\" 2>&1)",
+      "Bash(sleep 25 && docker exec aw_test sh -c '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"nc_Test_Pipeline1!\" -C -Q \"SELECT name FROM sys.databases\" 2>&1; echo \"exit:$?\"' 2>&1)",
+      "Bash(docker logs aw_test 2>&1 | tail -30 && sleep 20 && docker exec aw_test sh -c '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"nc_Test_Pipeline1!\" -C -Q \"SELECT name FROM sys.databases\" 2>&1; echo \"exit:$?\"' 2>&1)",
+      "Bash(docker exec:*)",
+      "Bash(docker rm:*)",
+      "Bash(cmd:*)"
     ]
   }
 }
