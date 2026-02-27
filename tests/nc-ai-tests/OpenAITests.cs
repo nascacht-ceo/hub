@@ -21,6 +21,8 @@ public class OpenAITests : CommonTests, IAsyncLifetime
 			.GetSection("tests:nc_ai_tests:openai");
 
 		_services = new ServiceCollection()
+			.AddLogging()
+			.AddUsageTracking()
 			.AddAiOpenAI("default", opts =>
 			{
 				opts.Model = _configuration["model"] ?? "gpt-4o";
@@ -36,6 +38,10 @@ public class OpenAITests : CommonTests, IAsyncLifetime
 	}
 
 	public async Task DisposeAsync() => await _services.DisposeAsync();
+
+	// The Responses API uses ConversationId as previous_response_id; arbitrary IDs are rejected by the API.
+	[Fact(Skip = "OpenAI Responses API rejects arbitrary ConversationId values as invalid previous_response_id")]
+	public override Task TracksUsage_ConversationIdPropagated() => Task.CompletedTask;
 
 	[Fact]
 	public async Task Embedding()

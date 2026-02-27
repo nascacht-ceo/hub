@@ -3,9 +3,15 @@ using System.Runtime.CompilerServices;
 
 namespace nc.Ai;
 
+/// <summary>
+/// A <see cref="DelegatingChatClient"/> that injects system instructions into every request.
+/// Instructions are resolved asynchronously from <see cref="AgentInstructions"/> and set on
+/// <c>ChatOptions.Instructions</c> before forwarding to the inner client.
+/// </summary>
 public sealed class InstructionsChatClient(IChatClient inner, AgentInstructions instructions)
 	: DelegatingChatClient(inner)
 {
+	/// <inheritdoc/>
 	public override async Task<ChatResponse> GetResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
@@ -15,6 +21,7 @@ public sealed class InstructionsChatClient(IChatClient inner, AgentInstructions 
 		return await base.GetResponseAsync(messages, options, cancellationToken);
 	}
 
+	/// <inheritdoc/>
 	public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,

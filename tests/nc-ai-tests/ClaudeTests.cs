@@ -18,6 +18,8 @@ public class ClaudeTests : CommonTests, IAsyncLifetime
 			.GetSection("tests:nc_ai_tests:claude");
 
 		_services = new ServiceCollection()
+			.AddLogging()
+			.AddUsageTracking()
 			.AddAiClaude("default", opts =>
 			{
 				opts.Model = configuration["model"] ?? "claude-opus-4-5";

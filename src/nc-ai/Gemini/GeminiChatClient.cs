@@ -27,6 +27,12 @@ public class GeminiChatClient : IChatClient
 	private readonly TimeSpan _cacheTtl;
 	private readonly IDistributedCache _instructionCache;
 
+	/// <summary>
+	/// Initializes the client, constructing an internal <c>Google.GenAI.Client</c> from
+	/// the agent configuration.
+	/// </summary>
+	/// <param name="options">Agent configuration including model, credentials, and cache TTL.</param>
+	/// <param name="cache">Optional distributed cache for instruction cache-name lookup; defaults to in-memory.</param>
 	public GeminiChatClient(GeminiAgent options, IDistributedCache? cache = null)
 	{
 		ArgumentNullException.ThrowIfNull(options);
@@ -39,6 +45,12 @@ public class GeminiChatClient : IChatClient
 		_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, httpOptions);
 	}
 
+	/// <summary>
+	/// Initializes the client with an externally provided <c>Google.GenAI.Client</c> (useful for testing).
+	/// </summary>
+	/// <param name="client">A pre-configured Google GenAI client.</param>
+	/// <param name="options">Agent configuration for model name and cache TTL.</param>
+	/// <param name="cache">Optional distributed cache for instruction cache-name lookup; defaults to in-memory.</param>
 	public GeminiChatClient(Client client, GeminiAgent options, IDistributedCache? cache = null)
 	{
 		ArgumentNullException.ThrowIfNull(options);
@@ -48,6 +60,7 @@ public class GeminiChatClient : IChatClient
 		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 	}
 
+	/// <inheritdoc/>
 	public async Task<ChatResponse> GetResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
@@ -62,6 +75,7 @@ public class GeminiChatClient : IChatClient
 		return ToClientResponse(response);
 	}
 
+	/// <inheritdoc/>
 	public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,

@@ -5,12 +5,26 @@ using System.Text;
 
 namespace nc.Ai;
 
+/// <summary>
+/// A <see cref="DelegatingChatClient"/> that maintains per-thread conversation history.
+/// On each call it loads prior messages from <see cref="IConversationStore"/>, merges them
+/// with the incoming messages, applies the <see cref="ICompactionStrategy"/>, and saves the
+/// updated history after a response is received.
+/// When the inner client advertises <see cref="INativeConversations"/>, history management
+/// is bypassed and the <c>ConversationId</c> is forwarded directly to the provider.
+/// </summary>
 public sealed class ConversationChatClient : DelegatingChatClient
 {
 	private readonly IConversationStore _store;
 	private readonly ICompactionStrategy _compaction;
 	private readonly bool _nativeConversations;
 
+	/// <summary>
+	/// Initializes the client and detects whether the inner client handles conversations natively.
+	/// </summary>
+	/// <param name="inner">The underlying chat client.</param>
+	/// <param name="store">The store used to persist and load conversation history.</param>
+	/// <param name="compaction">The strategy used to trim history before each request.</param>
 	public ConversationChatClient(IChatClient inner, IConversationStore store, ICompactionStrategy compaction)
 		: base(inner)
 	{
@@ -19,6 +33,7 @@ public sealed class ConversationChatClient : DelegatingChatClient
 		_nativeConversations = inner.GetService<INativeConversations>() is not null;
 	}
 
+	/// <inheritdoc/>
 	public override async Task<ChatResponse> GetResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
@@ -35,6 +50,7 @@ public sealed class ConversationChatClient : DelegatingChatClient
 		return response;
 	}
 
+	/// <inheritdoc/>
 	public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
@@ -78,8 +94,21 @@ public sealed class ConversationChatClient : DelegatingChatClient
 	}
 }
 
+/// <summary>
+/// Extension methods for adding conversation thread management to an <see cref="IChatClient"/>.
+/// </summary>
 public static class ConversationChatClientExtensions
 {
+	/// <summary>
+	/// Wraps <paramref name="client"/> with a <see cref="ConversationChatClient"/> that automatically
+	/// loads and saves thread history via <paramref name="store"/>.
+	/// </summary>
+	/// <param name="client">The client to wrap.</param>
+	/// <param name="store">The backing store for conversation history.</param>
+	/// <param name="compaction">
+	/// Optional compaction strategy; defaults to <see cref="SlidingWindowCompactionStrategy"/>
+	/// with its default <see cref="SlidingWindowOptions"/>.
+	/// </param>
 	public static IChatClient WithConversationThreads(
 		this IChatClient client,
 		IConversationStore store,

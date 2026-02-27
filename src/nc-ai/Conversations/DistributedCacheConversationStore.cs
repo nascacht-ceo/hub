@@ -6,11 +6,20 @@ using nc.Extensions;
 
 namespace nc.Ai;
 
+/// <summary>
+/// An <see cref="IConversationStore"/> backed by <see cref="IDistributedCache"/>,
+/// serializing message history as JSON with a sliding expiry.
+/// </summary>
 public class DistributedCacheConversationStore : IConversationStore
 {
 	private readonly IDistributedCache _cache;
 	private ConversationStoreOptions _options;
 
+	/// <summary>
+	/// Initializes the store and subscribes to live option changes.
+	/// </summary>
+	/// <param name="cache">The distributed cache backend.</param>
+	/// <param name="options">Store configuration including sliding expiry duration.</param>
 	public DistributedCacheConversationStore(IDistributedCache cache, IOptionsMonitor<ConversationStoreOptions> options)
 	{
 		_cache = cache;
@@ -18,9 +27,11 @@ public class DistributedCacheConversationStore : IConversationStore
 		options.OnChange(o => _options = o);
 	}
 
+	/// <inheritdoc/>
 	public async Task<IReadOnlyList<ChatMessage>> LoadAsync(string threadId, CancellationToken cancellationToken = default)
 		=> await _cache.GetAsync<List<ChatMessage>>(CacheKey(threadId), cancellationToken: cancellationToken) ?? [];
 
+	/// <inheritdoc/>
 	public Task SaveAsync(string threadId, IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
 	{
 		var entryOptions = new DistributedCacheEntryOptions

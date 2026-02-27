@@ -20,6 +20,8 @@ public class GeminiTests : CommonTests, IAsyncLifetime
 			.Build();
 
 		_services = new ServiceCollection()
+			.AddLogging()
+			.AddUsageTracking()
 			.AddAiGemini("default", opts =>
 			{
 				opts.Model = "gemini-2.5-pro";

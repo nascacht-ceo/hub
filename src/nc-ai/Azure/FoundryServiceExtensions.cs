@@ -8,6 +8,12 @@ namespace nc.Ai;
 
 public static partial class AiServiceExtensions
 {
+	/// <summary>
+	/// Registers a named Azure AI Foundry agent configured via a delegate and wires it into the <see cref="IAgentManager"/>.
+	/// </summary>
+	/// <param name="services">The service collection to add to.</param>
+	/// <param name="name">The name used to retrieve this agent from <see cref="IAgentManager"/>.</param>
+	/// <param name="configure">A delegate to configure the <see cref="FoundryAgent"/> options.</param>
 	public static IServiceCollection AddAiFoundry(
 		this IServiceCollection services,
 		string name,
@@ -18,6 +24,12 @@ public static partial class AiServiceExtensions
 		return services.AddAiFoundry();
 	}
 
+	/// <summary>
+	/// Registers a named Azure AI Foundry agent configured from an <see cref="IConfiguration"/> section and wires it into the <see cref="IAgentManager"/>.
+	/// </summary>
+	/// <param name="services">The service collection to add to.</param>
+	/// <param name="name">The name used to retrieve this agent from <see cref="IAgentManager"/>.</param>
+	/// <param name="configuration">The configuration section to bind against <see cref="FoundryAgent"/>.</param>
 	public static IServiceCollection AddAiFoundry(
 		this IServiceCollection services,
 		string name,

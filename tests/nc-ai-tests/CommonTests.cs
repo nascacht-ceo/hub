@@ -2,7 +2,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using nc.Ai;
 using nc.Ai.Interfaces;
 using System.Text;
 
@@ -36,7 +35,8 @@ public abstract class CommonTests
 			response.AppendLine(message.Text);
 		}
 		var answer = response.ToString();
-		Assert.True(answer.Contains("sunny") || answer.Contains("rain"), $"Answer was: {answer}");
+		var normalized = answer.Replace("\r", "").Replace("\n", "");
+		Assert.True(normalized.Contains("sunny") || normalized.Contains("rain"), $"Answer was: {answer}");
 	}
 
 	[Fact]
@@ -139,10 +139,46 @@ public abstract class CommonTests
 		Assert.Contains("Bob", r2b.Text, StringComparison.OrdinalIgnoreCase);
 	}
 
+	[Fact]
+	public async Task TracksUsage()
+	{
+		var tracker = new CapturingUsageTracker();
+		var client = Client.WithUsageTracking(tracker);
+
+		await client.GetResponseAsync("What is 1+1?");
+
+		Assert.Single(tracker.Records);
+		Assert.True(tracker.Records[0].InputTokens > 0);
+		Assert.True(tracker.Records[0].OutputTokens > 0);
+	}
+
+	[Fact]
+	public virtual async Task TracksUsage_ConversationIdPropagated()
+	{
+		var tracker = new CapturingUsageTracker();
+		var client = Client.WithUsageTracking(tracker);
+
+		await client.GetResponseAsync("What is 1+1?",
+			new ChatOptions { ConversationId = "conv-123" });
+
+		Assert.Equal("conv-123", tracker.Records[0].ConversationId);
+	}
+
 	private static IConversationStore NewConversationStore()
 	{
 		var cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 		return new DistributedCacheConversationStore(cache, new OptionsMonitorStub<ConversationStoreOptions>(new()));
+	}
+
+	private sealed class CapturingUsageTracker : IUsageTracker
+	{
+		public List<UsageRecord> Records { get; } = [];
+
+		public ValueTask TrackAsync(UsageRecord record, CancellationToken cancellationToken = default)
+		{
+			Records.Add(record);
+			return ValueTask.CompletedTask;
+		}
 	}
 
 	private sealed class OptionsMonitorStub<T>(T value) : IOptionsMonitor<T>

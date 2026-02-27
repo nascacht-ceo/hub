@@ -22,6 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.2.0-preview.1.26063.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
     <PackageReference Include="Polly" Version="8.6.5" />
   </ItemGroup>
@@ -35,6 +36,12 @@
     <Folder Include="Azure\" />
     <Folder Include="Bedrock\" />
     <Folder Include="OpenAI\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>nc-ai-tests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>
