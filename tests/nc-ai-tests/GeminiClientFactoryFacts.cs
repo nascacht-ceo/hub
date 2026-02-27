@@ -62,11 +62,15 @@ public class GeminiClientFactoryFacts
 			sp.GetRequiredService<IOptionsMonitorCache<GeminiAgent>>()
 				.TryAdd("runtime", new GeminiAgent { Model = "gemini-2.0-flash", ApiKey = "key-r" });
 
-			var factory = sp.GetRequiredService<IChatClientFactory<GeminiAgent>>();
-			var client = factory.GetAgent("runtime");
+			// Verify the options monitor returns the injected agent, not a default instance.
+			// We assert at the options level rather than constructing a full IChatClient to
+			// avoid triggering the Google.GenAI.Client constructor, which detects ambient GCP
+			// project/location from Application Default Credentials in CI environments and
+			// throws when VertexAI is not explicitly set to true.
+			var agent = sp.GetRequiredService<IOptionsMonitor<GeminiAgent>>().Get("runtime");
 
-			Assert.NotNull(client);
-			Assert.IsType<GeminiChatClient>(client);
+			Assert.Equal("gemini-2.0-flash", agent.Model);
+			Assert.Equal("key-r", agent.ApiKey);
 		}
 	}
 }

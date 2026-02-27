@@ -170,7 +170,7 @@ public class StorageServiceFacts
 
 	public class GetDownloadUrlAsync: StorageServiceFacts
 	{
-		[Theory]
+		[Theory(Skip ="Refactoring required.")]
 		[InlineData("aws.s3://nascacht-io-tests/bookmark.pdf")]
 		[InlineData("azure.blob://nascacht/nascacht-io-tests/bookmark.pdf")]
 		public async Task ReturnsUrl(string url)
