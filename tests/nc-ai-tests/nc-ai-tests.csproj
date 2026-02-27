@@ -44,9 +44,5 @@
     <None Update="tests.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\data\split.sample.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>data\split.sample.pdf</Link>
-    </None>
   </ItemGroup>
 </Project>
