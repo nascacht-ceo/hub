@@ -16,7 +16,7 @@ including educational use and use by non-profit organizations.
 2. Use of the Software is permitted for internal development, testing, and staging environments ("Non-Production Use"). 
 
 3. Use of the Software for Production Use is permitted only if your annual gross revenue (including that of your affiliates) 
-is less than $50,000,000 USD.
+is less than $1,000,000 USD.
 
 "Production Use" is defined as using the Software in any manner that provides a service to end-users, 
 processes live data, or supports the primary revenue-generating operations of a business.
