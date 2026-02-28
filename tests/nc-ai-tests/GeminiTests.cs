@@ -25,16 +25,11 @@ public class GeminiTests : CommonTests, IAsyncLifetime
 			.AddAiGemini("default", opts =>
 			{
 				opts.Model = "gemini-2.5-pro";
-				opts.ApiKey = configuration["tests:nc_ai_tests:gemini:apikey"];
-				opts.VertexAI = configuration.GetValue<bool?>("tests:nc_ai_tests:gemini:vertexai");
-				opts.Project = configuration["tests:nc_ai_tests:gemini:project"];
-				opts.Location = configuration["tests:nc_ai_tests:gemini:location"];
+				configuration.GetSection("tests:nc_ai_tests:gemini").Bind(opts);
 			})
 			.AddAiGemini("split", opts =>
 			{
 				opts.Model = "gemini-2.5-pro";
-				opts.ApiKey = configuration["tests:nc_ai_tests:gemini:apikey"];
-				opts.VertexAI = configuration.GetValue<bool?>("tests:nc_ai_tests:gemini:vertexai");
 				opts.Timeout = TimeSpan.FromMinutes(5);
 				opts.RetryCount = 2;
 				opts.Instructions = """
@@ -49,6 +44,7 @@ public class GeminiTests : CommonTests, IAsyncLifetime
 					- Metadata: an object containing any key-value pairs you can extract, where the key is the name of the field (PascalCase, alphanumeric only) and the value is the extracted value. For example, for a W2 you might extract {"Employer": "Contoso", "Wages": "44,629.35", "TaxWithheld": "5,000"}.
 					Return only the JSON array, no markdown or other text.
 					""";
+				configuration.GetSection("tests:nc_ai_tests:gemini").Bind(opts);
 			})
 			.BuildServiceProvider();
 	}

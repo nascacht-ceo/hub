@@ -42,7 +42,14 @@ public class GeminiChatClient : IChatClient
 		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 		var httpOptions = options.HttpOptions
 			?? (options.Timeout is { } t ? new HttpOptions { Timeout = (int)t.TotalMilliseconds } : null);
-		_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, httpOptions);
+		try
+		{
+			_client = new Client(options.VertexAI, options.ApiKey, options.Credential, options.Project, options.Location, httpOptions);
+		}
+		catch(Exception ex)
+		{
+			throw new InvalidOperationException($"Failed to create Gemini client. Please check your configuration and credentials. VertexAI: {options.VertexAI}; ApiKey {options.ApiKey}; Project: {options.Project}; Location: {options.Location}", ex);
+		}
 	}
 
 	/// <summary>
