@@ -30,7 +30,7 @@ public abstract class CommonTests
 			.UseFunctionInvocation()
 			.Build();
 		var response = new StringBuilder();
-		await foreach (var message in client.GetStreamingResponseAsync("What is the weather? Do I need an umbrella?", chatOptions))
+		await foreach (var message in client.GetStreamingResponseAsync("What is the weather in New York today? Do I need an umbrella?", chatOptions))
 		{
 			response.AppendLine(message.Text);
 		}
