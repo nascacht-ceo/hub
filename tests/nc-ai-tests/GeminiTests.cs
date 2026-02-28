@@ -26,11 +26,15 @@ public class GeminiTests : CommonTests, IAsyncLifetime
 			{
 				opts.Model = "gemini-2.5-pro";
 				opts.ApiKey = configuration["tests:nc_ai_tests:gemini:apikey"];
+				opts.VertexAI = configuration.GetValue<bool?>("tests:nc_ai_tests:gemini:vertexai");
+				opts.Project = configuration["tests:nc_ai_tests:gemini:project"];
+				opts.Location = configuration["tests:nc_ai_tests:gemini:location"];
 			})
 			.AddAiGemini("split", opts =>
 			{
 				opts.Model = "gemini-2.5-pro";
 				opts.ApiKey = configuration["tests:nc_ai_tests:gemini:apikey"];
+				opts.VertexAI = configuration.GetValue<bool?>("tests:nc_ai_tests:gemini:vertexai");
 				opts.Timeout = TimeSpan.FromMinutes(5);
 				opts.RetryCount = 2;
 				opts.Instructions = """
