@@ -337,3 +337,4 @@ ASALocalRun/
 /private_key.pem
 /public_key.pem
 /tests/data/split.sample.pdf
+/.claude/settings.local.json
