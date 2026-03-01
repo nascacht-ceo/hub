@@ -26,6 +26,7 @@ public class GeminiChatClient : IChatClient
 	private readonly string _model;
 	private readonly TimeSpan _cacheTtl;
 	private readonly IDistributedCache _instructionCache;
+	private readonly FunctionCallingConfigMode? _functionCallingMode;
 
 	/// <summary>
 	/// Initializes the client, constructing an internal <c>Google.GenAI.Client</c> from
@@ -39,6 +40,7 @@ public class GeminiChatClient : IChatClient
 		ArgumentException.ThrowIfNullOrEmpty(options.Model, nameof(options.Model));
 		_model = options.Model;
 		_cacheTtl = options.CacheTtl;
+		_functionCallingMode = options.FunctionCallingMode;
 		_instructionCache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 		var httpOptions = options.HttpOptions
 			?? (options.Timeout is { } t ? new HttpOptions { Timeout = (int)t.TotalMilliseconds } : null);
@@ -74,7 +76,8 @@ public class GeminiChatClient : IChatClient
 		CancellationToken cancellationToken = default)
 	{
 		var contents = BuildContents(messages);
-		var config = await BuildConfigAsync(options, cancellationToken);
+		var hasFunctionResults = HasFunctionResults(contents);
+		var config = await BuildConfigAsync(options, hasFunctionResults, cancellationToken);
 
 		var response = await _client.Models.GenerateContentAsync(
 			_model, contents, config, cancellationToken);
@@ -89,8 +92,8 @@ public class GeminiChatClient : IChatClient
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var contents = BuildContents(messages);
-		var config = await BuildConfigAsync(options, cancellationToken);
-		var hasFunctionResults = contents.Any(c => c.Parts?.Any(p => p.FunctionResponse != null) == true);
+		var hasFunctionResults = HasFunctionResults(contents);
+		var config = await BuildConfigAsync(options, hasFunctionResults, cancellationToken);
 
 		var yieldedAny = false;
 		await foreach (var chunk in _client.Models.GenerateContentStreamAsync(
@@ -150,7 +153,10 @@ public class GeminiChatClient : IChatClient
 		return null;
 	}
 
-	private async Task<GenerateContentConfig> BuildConfigAsync(ChatOptions? options, CancellationToken cancellationToken)
+	private static bool HasFunctionResults(List<Content> contents) =>
+		contents.Any(c => c.Parts?.Any(p => p.FunctionResponse != null) == true);
+
+	private async Task<GenerateContentConfig> BuildConfigAsync(ChatOptions? options, bool hasFunctionResults, CancellationToken cancellationToken)
 	{
 		var config = new GenerateContentConfig();
 
@@ -167,7 +173,14 @@ public class GeminiChatClient : IChatClient
 				.ToList();
 
 			if (declarations.Count > 0)
+			{
 				config.Tools = [new Tool { FunctionDeclarations = declarations }];
+				// On the initial turn, apply the configured calling mode (e.g. ANY for Vertex AI).
+				// On follow-up turns that already have function results, leave the mode unset so
+				// the model can chain further calls or generate a final text response freely.
+				if (!hasFunctionResults && _functionCallingMode is { } mode)
+					config.ToolConfig = new ToolConfig { FunctionCallingConfig = new FunctionCallingConfig { Mode = mode } };
+			}
 		}
 
 		if (options?.Instructions is { Length: > 0 } instructions)

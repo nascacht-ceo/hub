@@ -40,4 +40,13 @@ public record GeminiAgent: IAgent
 
 	/// <summary>Gets or sets advanced HTTP options passed to the underlying Google GenAI client.</summary>
 	public HttpOptions? HttpOptions { get; set; }
+
+	/// <summary>
+	/// Gets or sets the function-calling mode sent to Gemini on the initial turn (before any function
+	/// results are in the conversation).  Use <see cref="FunctionCallingConfigMode.Any"/> to force
+	/// the model to always invoke one of the supplied tools — required on Vertex AI where the default
+	/// AUTO mode may ask for user confirmation instead of calling the tool directly.
+	/// Defaults to <c>null</c> (Gemini's own default, equivalent to AUTO).
+	/// </summary>
+	public FunctionCallingConfigMode? FunctionCallingMode { get; set; }
 }

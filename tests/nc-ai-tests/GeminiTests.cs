@@ -1,4 +1,5 @@
 using Google.Cloud.AIPlatform.V1;
+using FunctionCallingConfigMode = Google.GenAI.Types.FunctionCallingConfigMode;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,7 @@ public class GeminiTests : CommonTests, IAsyncLifetime
 			.AddAiGemini("default", opts =>
 			{
 				opts.Model = "gemini-2.5-pro";
+				opts.FunctionCallingMode = FunctionCallingConfigMode.Any;
 				configuration.GetSection("tests:nc_ai_tests:gemini").Bind(opts);
 			})
 			.AddAiGemini("split", opts =>
