@@ -11,14 +11,14 @@ public abstract class CommonTests
 {
 	public required IChatClient Client { get; set; }
 
-	[Fact]
+	[SkippableFact]
 	public async Task Sample()
 	{
 		var response = await Client.GetResponseAsync("What is AI?");
 		Assert.NotNull(response);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public virtual async Task FunctionCalling()
 	{
 		ChatOptions chatOptions = new()
@@ -39,7 +39,7 @@ public abstract class CommonTests
 		Assert.True(normalized.Contains("sunny") || normalized.Contains("rain"), $"Answer was: {answer}");
 	}
 
-	[Fact]
+	[SkippableFact]
 	public virtual async Task FileAnalysis()
 	{
 		var file = new UriContent("https://nascacht-io-sample.s3.us-east-1.amazonaws.com/financial/w2.pdf", "application/pdf");
@@ -52,7 +52,7 @@ public abstract class CommonTests
 		Assert.Contains("44629.35", response.Text);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task UsesInstructions()
 	{
 		var options = new ChatOptions
@@ -64,7 +64,7 @@ public abstract class CommonTests
 		Assert.Contains("Tiberius", response.Text);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task StaticAgentInstructions()
 	{
 		AgentInstructions instructions = "Your name is Tiberius.";
@@ -75,7 +75,7 @@ public abstract class CommonTests
 		Assert.Contains("Tiberius", response.Text);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task DynamicAgentInstructions()
 	{
 		var callCount = 0;
@@ -96,7 +96,7 @@ public abstract class CommonTests
 		Assert.Equal(1, callCount);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task ConversationThread_RetainsHistory()
 	{
 		var client = Client.WithConversationThreads(NewConversationStore());
@@ -108,7 +108,7 @@ public abstract class CommonTests
 		Assert.Contains("Alice", r2.Text, StringComparison.OrdinalIgnoreCase);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task ConversationThread_Streaming_RetainsHistory()
 	{
 		var client = Client.WithConversationThreads(NewConversationStore());
@@ -122,7 +122,7 @@ public abstract class CommonTests
 		Assert.Contains("Alice", r2.Text, StringComparison.OrdinalIgnoreCase);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task ConversationThreads_AreIsolated()
 	{
 		var client = Client.WithConversationThreads(NewConversationStore());
@@ -139,7 +139,7 @@ public abstract class CommonTests
 		Assert.Contains("Bob", r2b.Text, StringComparison.OrdinalIgnoreCase);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public async Task TracksUsage()
 	{
 		var tracker = new CapturingUsageTracker();
@@ -152,7 +152,7 @@ public abstract class CommonTests
 		Assert.True(tracker.Records[0].OutputTokens > 0);
 	}
 
-	[Fact]
+	[SkippableFact]
 	public virtual async Task TracksUsage_ConversationIdPropagated()
 	{
 		var tracker = new CapturingUsageTracker();

@@ -53,7 +53,8 @@ public class GeminiTests : CommonTests, IAsyncLifetime
 
 	public Task InitializeAsync()
 	{
-		Client = _services.GetRequiredService<IAgentManager>().GetChatClient("default");
+		Client = new SkipOnResourceExhaustedClient(
+			_services.GetRequiredService<IAgentManager>().GetChatClient("default"));
 		return Task.CompletedTask;
 	}
 
