@@ -90,7 +90,9 @@ public class GeminiChatClient : IChatClient
 	{
 		var contents = BuildContents(messages);
 		var config = await BuildConfigAsync(options, cancellationToken);
+		var hasFunctionResults = contents.Any(c => c.Parts?.Any(p => p.FunctionResponse != null) == true);
 
+		var yieldedAny = false;
 		await foreach (var chunk in _client.Models.GenerateContentStreamAsync(
 			_model, contents, config, cancellationToken))
 		{
@@ -101,6 +103,7 @@ public class GeminiChatClient : IChatClient
 			{
 				if (part.FunctionCall is { } fc)
 				{
+					yieldedAny = true;
 					yield return new ChatResponseUpdate(ChatRole.Assistant,
 					[
 						new FunctionCallContent(
@@ -111,8 +114,30 @@ public class GeminiChatClient : IChatClient
 				}
 				else if (part.Text is { } text)
 				{
+					yieldedAny = true;
 					yield return new ChatResponseUpdate(ChatRole.Assistant, text);
 				}
+			}
+		}
+
+		// Gemini 2.5 Pro's thinking mode can consume its streaming budget on internal reasoning
+		// after function results, emitting no visible output. Fall back to a non-streaming call
+		// so the model can still emit further function calls or a final text response.
+		if (!yieldedAny && hasFunctionResults)
+		{
+			var response = await _client.Models.GenerateContentAsync(_model, contents, config, cancellationToken);
+			foreach (var part in response.Candidates?.FirstOrDefault()?.Content?.Parts ?? [])
+			{
+				if (part.FunctionCall is { } fc)
+					yield return new ChatResponseUpdate(ChatRole.Assistant,
+					[
+						new FunctionCallContent(
+							callId: fc.Id ?? fc.Name ?? Guid.NewGuid().ToString(),
+							name: fc.Name ?? string.Empty,
+							arguments: fc.Args?.ToDictionary(k => k.Key, k => (object?)k.Value))
+					]);
+				else if (part.Text is { } text)
+					yield return new ChatResponseUpdate(ChatRole.Assistant, text);
 			}
 		}
 	}

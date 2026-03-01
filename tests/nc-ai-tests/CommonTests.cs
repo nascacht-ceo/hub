@@ -19,7 +19,7 @@ public abstract class CommonTests
 	}
 
 	[Fact]
-	public async Task FunctionCalling()
+	public virtual async Task FunctionCalling()
 	{
 		ChatOptions chatOptions = new()
 		{
@@ -43,13 +43,13 @@ public abstract class CommonTests
 	public virtual async Task FileAnalysis()
 	{
 		var file = new UriContent("https://nascacht-io-sample.s3.us-east-1.amazonaws.com/financial/w2.pdf", "application/pdf");
-		var question = new TextContent("What is the total amount in box 1?");
+		var question = new TextContent("What dollar amount is shown in Box 1, Wages tips and other compensation? Reply with only the number.");
 		var userMessage = new ChatMessage(
 			ChatRole.User,
 			[file, question]
 		);
 		var response = await Client.GetResponseAsync([userMessage]);
-		Assert.Contains("44,629.35", response.Text);
+		Assert.Contains("44629.35", response.Text);
 	}
 
 	[Fact]

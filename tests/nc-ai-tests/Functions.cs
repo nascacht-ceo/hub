@@ -10,7 +10,7 @@ namespace nc.Ai.Tests;
 public static class Functions
 {
 	[Description("Gets the weather")]
-	public static string GetWeather(string location)
+	public static string GetWeather([Description("The city or location to get weather for")] string location)
 	{
 		return Random.Shared.NextDouble() > 0.5 ? "It's sunny" : "It's raining";
 	}
