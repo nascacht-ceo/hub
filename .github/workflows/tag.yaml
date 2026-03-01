@@ -7,6 +7,9 @@ jobs:
   release-pipeline:
     runs-on: ubuntu-latest
     environment: production  # Requires manual approval in GitHub UI
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       
@@ -23,4 +26,4 @@ jobs:
         with:
           configuration: Release
           # version_suffix omitted = Stable 1.0.0
-          nuget_key: ${{ secrets.NUGET_API_KEY }}
+          nuget_user: ${{ vars.NUGET_USER }}
